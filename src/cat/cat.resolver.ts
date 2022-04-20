@@ -22,7 +22,7 @@ export class CatResolver {
     }
 
     @Mutation(returns => CatType)
-async deleteCat(@Args('id') id: string) {
+    async deleteCat(@Args('id') id: string) {
     return this.catService.delete(id);
 }
 }
