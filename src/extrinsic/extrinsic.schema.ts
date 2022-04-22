@@ -6,14 +6,6 @@ import * as mongoose from 'mongoose';
 
 import { Event } from 'src/event/event.schema';
 
-
-/*class Characteristics {
-    lifespan: string
-    size: 'small' | 'medium' | 'large'
-    coat: 'short' | 'medium' | 'long'
-    color: string
-}*/
-
 @Schema()
 export class Extrinsic {
 
@@ -46,7 +38,6 @@ export class Extrinsic {
 
     @Prop()
     succes: boolean;
-
 
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }] })
     events: Event[];

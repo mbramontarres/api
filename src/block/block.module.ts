@@ -3,9 +3,13 @@ import { BlockResolver } from './block.resolver';
 import { BlockService } from './block.service';
 
 import { ExtrinsicModule } from 'src/extrinsic/extrinsic.module';
+import { EventModule } from 'src/event/event.module';
+import { LogModule } from 'src/log/log.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Block, BlockSchema } from './block.schema';
 
 @Module({
   providers: [BlockResolver, BlockService],
-  imports: [ExtrinsicModule]
+  imports: [ExtrinsicModule,EventModule,LogModule, MongooseModule.forFeature([{ name: Block.name, schema: BlockSchema }])]
 })
 export class BlockModule {}
