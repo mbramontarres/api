@@ -2,6 +2,132 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type EventType {
+  eventIndex: String!
+  blockNum: Int!
+  blockTimestamp: Int!
+  extrinsicIndex: Int!
+  moduleId: String!
+  eventId: String!
+  params: String!
+  eventIdx: Int!
+  extrinsicHash: String!
+}
+
+type ExtrinsicType {
+  blockNum: Int!
+  blockTimestamp: Int!
+  extrinsicIndex: String!
+  callModulefunction: String!
+  callModule: String!
+  accountId: String!
+  signature: String!
+  nonce: String!
+  extrinsicHash: String!
+  succes: Boolean!
+  events: [EventType!]!
+  params: String!
+  fee: Float!
+  finalized: Boolean!
+}
+
+type LogType {
+  logIndex: String!
+  blockNum: Int!
+  logType: String!
+  originType: String!
+  data: String!
+}
+
+type BlockType {
+  blockNum: Int!
+  blockTimestamp: Int!
+  blockHash: String!
+  parentHash: String!
+  stateRoot: String!
+  extrinsicsRoot: String!
+  extrinsics: [ExtrinsicType!]!
+  events: [EventType!]!
+  logs: [LogType!]!
+  eventCount: Int!
+  extrinsicsCount: Int!
+  specVersion: Int!
+  blockAuthor: String!
+  finalized: Boolean!
+}
+
+input EventInputType {
+  eventIndex: String!
+  blockNum: Int!
+  blockTimestamp: Int!
+  extrinsicIndex: Int!
+  moduleId: String!
+  eventId: String!
+  params: String!
+  eventIdx: Int!
+  extrinsicHash: String!
+}
+
+input ExtrinsicInputType {
+  blockNum: Int!
+  blockTimestamp: Int!
+  extrinsicIndex: String!
+  callModulefunction: String!
+  callModule: String!
+  accountId: String!
+  signature: String!
+  nonce: String!
+  extrinsicHash: String!
+  succes: Boolean!
+  events: [EventInputType!]!
+  params: String!
+  fee: Float!
+  finalized: Boolean!
+}
+
+input LogInputType {
+  logIndex: String!
+  blockNum: Int!
+  logType: String!
+  originType: String!
+  data: String!
+}
+
+input BlockInputType {
+  blockNum: Int!
+  blockTimestamp: Int!
+  blockHash: String!
+  parentHash: String!
+  stateRoot: String!
+  extrinsicsRoot: String!
+  extrinsics: [ExtrinsicInputType!]!
+  events: [EventInputType!]!
+  logs: [LogInputType!]!
+  eventCount: Int!
+  extrinsicsCount: Int!
+  specVersion: Int!
+  blockAuthor: String!
+  finalized: Boolean!
+}
+
 type Query {
-  hello: String!
+  blocks(skip: Int = 0, take: Int = 25): [BlockType!]!
+  extrinsics: [ExtrinsicType!]!
+  events: [EventType!]!
+  logs: [LogType!]!
+}
+
+type Mutation {
+  createBlock(input: BlockInputType!): BlockType!
+  updateBlock(id: String!, input: BlockInputType!): BlockType!
+  deleteBlock(id: String!): BlockType!
+  createExtrinsic(input: ExtrinsicInputType!): ExtrinsicType!
+  updateExtrinsic(id: String!, input: ExtrinsicInputType!): ExtrinsicType!
+  deleteExtrinsic(id: String!): ExtrinsicType!
+  createEvent(input: EventInputType!): EventType!
+  updateEvent(id: String!, input: EventInputType!): EventType!
+  deleteEvent(id: String!): EventType!
+  createLog(input: LogInputType!): LogType!
+  updateLog(id: String!, input: LogInputType!): LogType!
+  deleteLog(id: String!): LogType!
 }

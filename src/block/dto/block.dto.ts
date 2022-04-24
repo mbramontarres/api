@@ -4,6 +4,9 @@ import { Extrinsic } from "src/extrinsic/extrinsic.schema";
 import { Log } from "src/log/log.schema";
 import { Event } from "src/event/event.schema";
 import mongoose from "mongoose";
+import { ExtrinsicType } from "src/extrinsic/extrinsic.dto";
+import { EventType } from "src/event/event.dto";
+import { LogType } from "src/log/log.dto";
 
 
 @ObjectType('BlockType')
@@ -28,14 +31,14 @@ export class BlockType {
     @Field()
     extrinsicsRoot: string;
 
-    @Field(type => [{ type: mongoose.Schema.Types.ObjectId, ref: 'Extrinsic' }])
-    extrinsics: Extrinsic[];
+    @Field(() => [ExtrinsicType])
+    extrinsics: ExtrinsicType[];
 
-    @Field(type => [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }])
-    events: Event[];
+    @Field(() => [EventType])
+    events: EventType[];
 
-    @Field(type => [{ type: mongoose.Schema.Types.ObjectId, ref: 'Log' }])
-    logs: Log[];
+    @Field(() => [LogType])
+    logs: LogType[];
 
     @Field(() => Int)
     eventCount: number;

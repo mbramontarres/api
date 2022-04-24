@@ -1,21 +1,28 @@
-import { Int } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema()
+@ObjectType()
 export class Log {
+
+    @Field(() => String)
     @Prop()
     logIndex: string;
 
-    @Prop({type: Int})
+    @Field(() => Int)
+    @Prop()
     blockNum: number;
 
+    @Field(() => String)
     @Prop()
     logType: string;
 
+    @Field(() => String)
     @Prop()
     originType: string;
 
+    @Field(() => String)
     @Prop()
     data: string;
     

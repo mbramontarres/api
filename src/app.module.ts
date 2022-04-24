@@ -4,7 +4,6 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CatModule } from './cat/cat.module';
 import { ChainModule } from './chain/chain.module';
 import { BlockModule } from './block/block.module';
 import { ExtrinsicModule } from './extrinsic/extrinsic.module';
@@ -17,8 +16,7 @@ import { LogModule } from './log/log.module';
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
     }),
-    CatModule,
-    MongooseModule.forRoot('mongodb://localhost/nest'),
+    MongooseModule.forRoot('mongodb://localhost/explorerdb'),
     ChainModule,
     BlockModule,
     ExtrinsicModule,

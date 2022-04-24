@@ -1,33 +1,44 @@
-import { Int } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema()
+@ObjectType()
 export class Event {
+
+    @Field(()=> String)
     @Prop()
     eventIndex: string;
 
-    @Prop({type: Int})
+    @Field(()=> Int)
+    @Prop()
     blockNum: number;
 
-    @Prop({type: Int})
+    @Field(()=> Number)
+    @Prop()
     blockTimestamp: number;
 
-    @Prop({type: Int})
+    @Field(()=> Int)
+    @Prop()
     extrinsicIndex: number;
 
+    @Field(()=> String)
     @Prop()
     moduleId: string;
 
+    @Field(()=> String)
     @Prop()
     eventId: string;
     
+    @Field(()=> String)
     @Prop()
     params: string;
 
-    @Prop({type: Int})
+    @Field(()=> Number)
+    @Prop()
     eventIdx: number;
 
+    @Field(()=> String)
     @Prop()
     extrinsicHash: string;
     

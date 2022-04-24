@@ -12,6 +12,7 @@ export class BlockResolver {
         return this.blockService.findAll(blocksArgs);
     }
 
+
     @Mutation(returns => BlockType)
     async createBlock(@Args('input') input: BlockType) {
         return this.blockService.create(input);

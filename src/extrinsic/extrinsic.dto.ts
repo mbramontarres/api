@@ -1,5 +1,9 @@
 import { ObjectType, Field, InputType, Int } from "@nestjs/graphql";
 import mongoose from "mongoose";
+import { EventType } from "src/event/event.dto";
+
+
+import { Event } from 'src/event/event.schema';
 
 @ObjectType('ExtrinsicType')
 @InputType('ExtrinsicInputType')
@@ -34,8 +38,8 @@ export class ExtrinsicType {
     @Field()
     succes: boolean;
 
-    @Field(type => [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }])
-    events: Event[];
+    @Field(() => [EventType])
+    events: EventType[];
 
     @Field()
     params: string;
