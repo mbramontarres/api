@@ -27,6 +27,7 @@
     "@nestjs/graphql": "^10.0.9",
     "@nestjs/mongoose": "^9.0.3",
     "@nestjs/platform-express": "^8.0.0",
+    "@polkadot/api": "^8.2.1",
     "apollo-server-express": "^3.6.7",
     "class-validator": "^0.13.2",
     "graphql": "^16.3.0",

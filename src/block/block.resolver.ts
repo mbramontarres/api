@@ -12,6 +12,10 @@ export class BlockResolver {
         return this.blockService.findAll(blocksArgs);
     }
 
+    /*@Query(returns => [Number])
+    async blockGaps() {
+        return this.blockService.findGaps();
+    }*/
 
     @Mutation(returns => BlockType)
     async createBlock(@Args('input') input: BlockType) {
