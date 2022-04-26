@@ -1,11 +1,15 @@
+//@ts-check
 // Import
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
+
+import {BlockType} from '../src/block/dto/block.dto'
 
 // Construct
 const wsProvider = new WsProvider('wss://rpc.polkadot.io');
 const api = await ApiPromise.create({ provider: wsProvider });
 
+await module.exports.processBlocks(api);
 // Do something
 const chain = await api.rpc.system.chain();
 await api.rpc.chain.subscribeNewHeads((lastHeader) => {
@@ -26,6 +30,41 @@ await api.rpc.chain.subscribeNewHeads((lastHeader) => {
         //const block = await api.rpc.chain.getBlock
         //Get Block Hash
         const blockHash = await api.rpc.chain.getBlockHash(gap);
+        const [
+            blockHeader,
+            runtimeVersion,
+            timestampMs,
+            validatorCount,
+            ChainCurrentIndex,
+            ChainCurrentSlot,
+            ChainEpochIndex,
+            ChainGenesisSlot,
+            ChainCurrentEra,
+            eraElectionStatus,
+            totalIssuance
+          ] = await Promise.all([
+            api.derive.chain.getHeader(blockHash),
+            api.rpc.state.getRuntimeVersion(blockHash),
+            api.query.timestamp.now.at(blockHash),
+            api.query.staking.validatorCount.at(blockHash),
+            api.query.session.currentIndex.at(blockHash),
+            api.query.babe.currentSlot.at(blockHash),
+            api.query.babe.epochIndex.at(blockHash),
+            api.query.babe.genesisSlot.at(blockHash),
+            api.query.staking.currentEra.at(blockHash),
+            api.query.staking.eraElectionStatus.at(blockHash),
+            api.query.balances.totalIssuance.at(blockHash)
+        ]);
+
+        const block = new BlockType;
+        const apiblock  = await api.at(blockHash);
+        let events = [];       
+        events = await  apiblock.events;
+        events.forEach( event =>{
+            //block.events.push(evet)
+            
+        });
+            
         
         //const parentHash = header.parentHash
 

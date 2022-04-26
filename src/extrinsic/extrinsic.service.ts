@@ -9,7 +9,7 @@ export class ExtrinsicService {
     constructor(@InjectModel(Extrinsic.name) private extrinsicModel: Model<ExtrinsicDocument>) {}
 
     async findAll(): Promise<Extrinsic[]> {
-        return this.extrinsicModel.find().exec();
+        return this.extrinsicModel.find().populate('events').exec();
     }
 
     async create(createExtrinsicDto: ExtrinsicType): Promise<Extrinsic> {

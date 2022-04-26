@@ -14,7 +14,16 @@ export class BlockService {
     public async findAll(blockArgs: BlockArgs): Promise<Block[]> 
     {
         //const { limit, offset } = blockArgs;
-        return this.blockModel.find({skip: blockArgs.skip, take: blockArgs.take});
+        return this.blockModel.find({skip: blockArgs.skip, take: blockArgs.take}).exec();
+    }
+
+    public async findOne(num: Number): Promise<Block[]> 
+    {
+        //const { limit, offset } = blockArgs;
+        return this.blockModel.find({blockNum: num})
+                    .populate('extrinsics')
+                    .populate('events')
+                    .populate('logs').exec();
     }
 
     /*public async findGaps(): Promise<Number[]>
