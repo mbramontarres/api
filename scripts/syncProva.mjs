@@ -4,6 +4,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 
 
 import {BlockType} from '../src/block/dto/block.dto'
+import {ExtrinsicType} from '../src/extrinsic/extrinsic.dto'
 
 // Construct
 const wsProvider = new WsProvider('wss://rpc.polkadot.io');
@@ -58,17 +59,42 @@ await api.rpc.chain.subscribeNewHeads((lastHeader) => {
 
         const block = new BlockType;
         const apiblock  = await api.at(blockHash);
-        let events = [];       
-        events = await  apiblock.events;
+        /*let events = [];       
+        events = await apiblock.query.system.events;
         events.forEach( event =>{
             //block.events.push(evet)
             
-        });
-            
+        });*/
         
+        const CurrentBlock = await api.rpc.chain.getBlock(blockHash);
+        let extrinsics = [];
+        extrinsics = CurrentBlock.block.extrinsics;
+        extrinsics.forEach( extr => {
+            const extrinsic = new ExtrinsicType;
+            extrinsic.blockNum = gap;
+            extrinsic.extrinsicHash = extr.hash.toHex();
+            extrinsic.signature = extr.signature.toHex();
+            //...
+            //Inserir
+            //block.extrinsics.push();
+        });
+
+        const extendedHeader = await api.derive.chain.getHeader(blockHash);
+
+        block.blockHash = blockHash.toHex();
+        block.blockNum = gap;
+        block.parentHash = CurrentBlock.block.header.parentHash.toHex();
+        block.extrinsicsRoot = CurrentBlock.block.header.extrinsicsRoot.toHex();
+        block.stateRoot = CurrentBlock.block.header.stateRoot.toHex();
+        block.blockAuthor = extendedHeader.author.toHex();
+        //Inserir logs
+
         //const parentHash = header.parentHash
 
     })
 
 
 });
+
+async
+
