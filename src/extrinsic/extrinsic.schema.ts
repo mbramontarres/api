@@ -20,17 +20,17 @@ export class Extrinsic {
     @Prop()
     blockTimestamp: number;
 
-    @Field(() => String)
+    @Field(() => Int)
     @Prop()
-    extrinsicIndex: string;
+    extrinsicIndex: number;
 
     @Field(() => String)
     @Prop()
-    callModulefunction: string;
+    section: string;
 
     @Field(() => String)
     @Prop()
-    callModule: string;
+    method: string;
 
     @Field(() => String)
     @Prop()
