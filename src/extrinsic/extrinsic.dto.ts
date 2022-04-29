@@ -1,6 +1,6 @@
 import { ObjectType, Field, InputType, Int } from "@nestjs/graphql";
 import mongoose from "mongoose";
-import { EventType } from "src/event/event.dto";
+import { EventType } from "../event/event.dto";
 
 
 import { Event } from 'src/event/event.schema';
@@ -14,14 +14,14 @@ export class ExtrinsicType {
     @Field(() => Int)
     blockTimestamp: number;
 
-    @Field()
-    extrinsicIndex: string;
+    @Field(() => Int)
+    extrinsicIndex: number;
 
     @Field()
-    callModulefunction: string;
+    section: string;
 
     @Field()
-    callModule: string;
+    method: string;
 
     @Field()
     accountId: string;
@@ -36,7 +36,7 @@ export class ExtrinsicType {
     extrinsicHash: string;
 
     @Field()
-    succes: boolean;
+    success: boolean;
 
     @Field(() => [EventType])
     events: EventType[];

@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { BlockResolver } from './block.resolver';
 import { BlockService } from './block.service';
 
-import { ExtrinsicModule } from 'src/extrinsic/extrinsic.module';
-import { EventModule } from 'src/event/event.module';
-import { LogModule } from 'src/log/log.module';
+import { ExtrinsicModule } from '../extrinsic/extrinsic.module';
+import { EventModule } from '../event/event.module';
+import { LogModule } from '../log/log.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Block, BlockSchema } from './block.schema';
 

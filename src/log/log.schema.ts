@@ -6,9 +6,9 @@ import { Document } from 'mongoose';
 @ObjectType()
 export class Log {
 
-    @Field(() => String)
+    @Field(() => Int)
     @Prop()
-    logIndex: string;
+    logIndex: number;
 
     @Field(() => Int)
     @Prop()

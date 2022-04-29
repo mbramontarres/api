@@ -4,8 +4,8 @@ import { Document } from 'mongoose';
 import { type } from 'os';
 import * as mongoose from 'mongoose';
 
-import { Event } from 'src/event/event.schema';
-import { EventType } from 'src/event/event.dto';
+import { Event } from '../event/event.schema';
+import { EventType } from '../event/event.dto';
 
 
 @Schema()
@@ -50,7 +50,7 @@ export class Extrinsic {
 
     @Field(() => Boolean)
     @Prop()
-    succes: boolean;
+    success: boolean;
 
     @Field(() => [EventType])
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }] })

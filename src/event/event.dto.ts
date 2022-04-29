@@ -3,8 +3,8 @@ import { ObjectType, Field, InputType, Int } from "@nestjs/graphql";
 @ObjectType('EventType')
 @InputType('EventInputType')
 export class EventType {
-    @Field()
-    eventIndex: string;
+    @Field(() => Int)
+    eventIndex: number;
 
     @Field(() => Int)
     blockNum: number;
@@ -16,7 +16,16 @@ export class EventType {
     extrinsicIndex: number;
 
     @Field()
-    moduleId: string;
+    method: string;
+
+    @Field()
+    section: string;
+
+    @Field()
+    phase: string;
+
+    @Field()
+    doc: string;
 
     @Field()
     eventId: string;

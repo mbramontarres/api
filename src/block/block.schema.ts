@@ -4,12 +4,12 @@ import { Document } from 'mongoose';
 import { type } from 'os';
 import * as mongoose from 'mongoose';
 
-import { Extrinsic } from 'src/extrinsic/extrinsic.schema';
-import { Event } from 'src/event/event.schema';
-import { Log } from 'src/log/log.schema';
-import { ExtrinsicType } from 'src/extrinsic/extrinsic.dto';
-import { LogType } from 'src/log/log.dto';
-import { EventType } from 'src/event/event.dto';
+import { Extrinsic } from '../extrinsic/extrinsic.schema';
+import { Event } from '../event/event.schema';
+import { Log } from '../log/log.schema';
+import { ExtrinsicType } from '../extrinsic/extrinsic.dto';
+import { LogType } from '../log/log.dto';
+import { EventType } from '../event/event.dto';
 
 @Schema()
 @ObjectType()
@@ -51,7 +51,6 @@ export class Block {
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Log' }] })
     logs: Log[];
 
-
     @Field(()=> Int)
     @Prop()
     eventCount: number;
@@ -60,7 +59,7 @@ export class Block {
     @Prop()
     extrinsicsCount: number;
 
-    @Field(()=> Number)
+    @Field(()=> Int)
     @Prop()
     specVersion: number;
 

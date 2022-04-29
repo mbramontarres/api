@@ -16,7 +16,7 @@ import { LogModule } from './log/log.module';
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
     }),
-    MongooseModule.forRoot('mongodb://localhost/explorerdb'),
+    MongooseModule.forRoot("mongodb://127.0.0.1:54755/explorerdb"/*'mongodb://localhost/explorerdb'*/),
     ChainModule,
     BlockModule,
     ExtrinsicModule,

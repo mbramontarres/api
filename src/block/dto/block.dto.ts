@@ -4,9 +4,9 @@ import { Extrinsic } from "src/extrinsic/extrinsic.schema";
 import { Log } from "src/log/log.schema";
 import { Event } from "src/event/event.schema";
 import mongoose from "mongoose";
-import { ExtrinsicType } from "src/extrinsic/extrinsic.dto";
-import { EventType } from "src/event/event.dto";
-import { LogType } from "src/log/log.dto";
+import { ExtrinsicType } from "../../extrinsic/extrinsic.dto";
+import { EventType } from "../../event/event.dto";
+import { LogType } from "../../log/log.dto";
 
 
 @ObjectType('BlockType')

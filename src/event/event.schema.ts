@@ -6,9 +6,9 @@ import { Document } from 'mongoose';
 @ObjectType()
 export class Event {
 
-    @Field(()=> String)
+    @Field(()=> Int)
     @Prop()
-    eventIndex: string;
+    eventIndex: Number;
 
     @Field(()=> Int)
     @Prop()
@@ -24,7 +24,19 @@ export class Event {
 
     @Field(()=> String)
     @Prop()
-    moduleId: string;
+    method: string;
+
+    @Field(()=> String)
+    @Prop()
+    section: string;
+
+    @Field(()=> String)
+    @Prop()
+    phase: string;
+
+    @Field(()=> String)
+    @Prop()
+    doc: string;
 
     @Field(()=> String)
     @Prop()
