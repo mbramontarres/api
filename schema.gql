@@ -3,11 +3,14 @@
 # ------------------------------------------------------
 
 type EventType {
-  eventIndex: String!
+  eventIndex: Int!
   blockNum: Int!
   blockTimestamp: Int!
   extrinsicIndex: Int!
-  moduleId: String!
+  method: String!
+  section: String!
+  phase: String!
+  doc: String!
   eventId: String!
   params: String!
   eventIdx: Int!
@@ -17,14 +20,14 @@ type EventType {
 type ExtrinsicType {
   blockNum: Int!
   blockTimestamp: Int!
-  extrinsicIndex: String!
-  callModulefunction: String!
-  callModule: String!
+  extrinsicIndex: Int!
+  section: String!
+  method: String!
   accountId: String!
   signature: String!
   nonce: String!
   extrinsicHash: String!
-  succes: Boolean!
+  success: Boolean!
   events: [EventType!]!
   params: String!
   fee: Float!
@@ -32,7 +35,7 @@ type ExtrinsicType {
 }
 
 type LogType {
-  logIndex: String!
+  logIndex: Int!
   blockNum: Int!
   logType: String!
   originType: String!
@@ -57,11 +60,14 @@ type BlockType {
 }
 
 input EventInputType {
-  eventIndex: String!
+  eventIndex: Int!
   blockNum: Int!
   blockTimestamp: Int!
   extrinsicIndex: Int!
-  moduleId: String!
+  method: String!
+  section: String!
+  phase: String!
+  doc: String!
   eventId: String!
   params: String!
   eventIdx: Int!
@@ -71,14 +77,14 @@ input EventInputType {
 input ExtrinsicInputType {
   blockNum: Int!
   blockTimestamp: Int!
-  extrinsicIndex: String!
-  callModulefunction: String!
-  callModule: String!
+  extrinsicIndex: Int!
+  section: String!
+  method: String!
   accountId: String!
   signature: String!
   nonce: String!
   extrinsicHash: String!
-  succes: Boolean!
+  success: Boolean!
   events: [EventInputType!]!
   params: String!
   fee: Float!
@@ -86,7 +92,7 @@ input ExtrinsicInputType {
 }
 
 input LogInputType {
-  logIndex: String!
+  logIndex: Int!
   blockNum: Int!
   logType: String!
   originType: String!

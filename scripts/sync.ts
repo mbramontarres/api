@@ -16,24 +16,32 @@ async function Run(){
     const api = await ApiPromise.create({ provider: wsProvider });
 
 
-    const db = await mongoose.connect("mongodb://127.0.0.1:54755/explorerdb");
+    const db = await mongoose.connect("mongodb://127.0.0.1:59566/explorerdb");
     mongoose.connection
         .once("open", () => console.log("Connected to Database"))
         .on("error", error => {
             console.log("Couldn't connect to MongoDb Database",error);
         });
 
-    
+        /*const [
+            res1,
+            res2
+        ] = await Promise.all([
+            asyncCall1(),
+            asyncCall1(),
+        ]);*/
     const chain = await api.rpc.system.chain();
     await api.rpc.chain.subscribeNewHeads(async (lastHeader) => {
         console.log(`${chain}: last block #${lastHeader.number} has hash ${lastHeader.hash}`);
 
+        //Provar
+        //await Promise.all([addBlocksDb(db,api,lastHeader.number.toNumber()),findGaps(db,api,lastHeader.number.toNumber())])
 
         //Guardar blocks en un gridfs
 
-        if((await db.model('blocks',BlockSchema).find()).length == 0){
+        /*if((await db.model('blocks',BlockSchema).find()).length == 0){
             await addBlocksDb(db,api,lastHeader.number.toNumber());
-        }
+        }*/
         //prova
         await addBlocksDb(db,api,lastHeader.number.toNumber());
         /*else{
@@ -56,6 +64,20 @@ async function Run(){
 
     });
 
+}
+
+async function findGaps(db,api: ApiPromise, lastHeader){
+    const gaps =  await db.model('blocks',BlockSchema).aggregate([
+        {
+          $group: {_id: null, nos: {$push: "$blockNum"}}
+        },
+        {
+          $addFields: {missing: {$setDifference: [{$range: [0,lastHeader]},"$nos"]}}
+        }])
+    
+    gaps.forEach(gap => {
+        addBlocksDb(db,api,gap);
+    });
 }
 
 async function addBlocksDb(db,api: ApiPromise,gap) {
