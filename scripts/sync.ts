@@ -10,13 +10,14 @@ import { EventSchema } from "../src/event/event.schema";
 import { EventType } from "../src/event/event.dto";
 import { LogSchema } from "../src/log/log.schema";
 import { LogType } from "../src/log/log.dto";
+import config from "../config/config";
 
 async function Run(){
     const wsProvider = new WsProvider('wss://rpc.polkadot.io');
     const api = await ApiPromise.create({ provider: wsProvider });
 
 
-    const db = await mongoose.connect("mongodb://127.0.0.1:59566/explorerdb");
+    const db = await mongoose.connect(config.mongoDBConstring);
     mongoose.connection
         .once("open", () => console.log("Connected to Database"))
         .on("error", error => {

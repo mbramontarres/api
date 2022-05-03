@@ -14,7 +14,8 @@ export class BlockService {
     public async findAll(blockArgs: BlockArgs): Promise<Block[]> 
     {
         //const { limit, offset } = blockArgs;
-        return this.blockModel.find({skip: blockArgs.skip, take: blockArgs.take}).exec();
+
+        return this.blockModel.find().sort({blockNum: -1}).skip(blockArgs.skip).limit(blockArgs.take).exec();
     }
 
     public async findOne(num: Number): Promise<Block[]> 

@@ -16,7 +16,7 @@ export class BlockType {
     @Field(() => Int)
     blockNum: number;
 
-    @Field(() => Int)
+    @Field(() => Number)
     blockTimestamp: number;
 
     @Field()

@@ -9,7 +9,7 @@ export class EventType {
     @Field(() => Int)
     blockNum: number;
 
-    @Field(() => Int)
+    @Field(() => Number)
     blockTimestamp: number;
 
     @Field(() => Int)

@@ -9,6 +9,7 @@ import { BlockModule } from './block/block.module';
 import { ExtrinsicModule } from './extrinsic/extrinsic.module';
 import { EventModule } from './event/event.module';
 import { LogModule } from './log/log.module';
+import config from "../config/config";
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { LogModule } from './log/log.module';
       driver: ApolloDriver,
       autoSchemaFile: 'schema.gql',
     }),
-    MongooseModule.forRoot("mongodb://127.0.0.1:59566/explorerdb"/*'mongodb://localhost/explorerdb'*/),
+    MongooseModule.forRoot(config.mongoDBConstring/*'mongodb://localhost/explorerdb'*/),
     ChainModule,
     BlockModule,
     ExtrinsicModule,

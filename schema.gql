@@ -5,7 +5,7 @@
 type EventType {
   eventIndex: Int!
   blockNum: Int!
-  blockTimestamp: Int!
+  blockTimestamp: Float!
   extrinsicIndex: Int!
   method: String!
   section: String!
@@ -19,7 +19,7 @@ type EventType {
 
 type ExtrinsicType {
   blockNum: Int!
-  blockTimestamp: Int!
+  blockTimestamp: Float!
   extrinsicIndex: Int!
   section: String!
   method: String!
@@ -44,7 +44,7 @@ type LogType {
 
 type BlockType {
   blockNum: Int!
-  blockTimestamp: Int!
+  blockTimestamp: Float!
   blockHash: String!
   parentHash: String!
   stateRoot: String!
@@ -62,7 +62,7 @@ type BlockType {
 input EventInputType {
   eventIndex: Int!
   blockNum: Int!
-  blockTimestamp: Int!
+  blockTimestamp: Float!
   extrinsicIndex: Int!
   method: String!
   section: String!
@@ -76,7 +76,7 @@ input EventInputType {
 
 input ExtrinsicInputType {
   blockNum: Int!
-  blockTimestamp: Int!
+  blockTimestamp: Float!
   extrinsicIndex: Int!
   section: String!
   method: String!
@@ -101,7 +101,7 @@ input LogInputType {
 
 input BlockInputType {
   blockNum: Int!
-  blockTimestamp: Int!
+  blockTimestamp: Float!
   blockHash: String!
   parentHash: String!
   stateRoot: String!
@@ -118,6 +118,7 @@ input BlockInputType {
 
 type Query {
   blocks(skip: Int = 0, take: Int = 25): [BlockType!]!
+  block(blockNum: Float!): [BlockType!]!
   extrinsics: [ExtrinsicType!]!
   events: [EventType!]!
   logs: [LogType!]!
