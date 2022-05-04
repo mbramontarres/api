@@ -46,8 +46,8 @@ async function Run(){
             await addBlocksDb(db,api,lastHeader.number.toNumber());
         }*/
         //prova
-        let users = await api.query.system.account.keys();
-        console.log(users.length);
+        //let users = await api.query.system.account.keys();
+        //console.log(users.length);
        await addBlocksDb(db,api,lastHeader.number.toNumber());
         /*else{
             //Find block gaps in db
@@ -131,7 +131,7 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
      block.extrinsics = [];
      block.events = [];
      //Afegir parametres que falten
-     extrinsics.forEach((extrinsic,index) => {
+     extrinsics.forEach(async (extrinsic,index) => {
         extr.section =  extrinsic.method.section;
         extr.blockTimestamp = timestamp;
         extr.method = extrinsic.method.method;
@@ -140,10 +140,10 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
         extr.extrinsicHash = extrinsic.hash.toHex();
         extr.extrinsicIndex = index;
         extr.params = JSON.stringify(extrinsic.method.args);
-
+        let feeInfo = null;
         if(extrinsic.isSigned){
             extr.nonce = extrinsic.nonce.toString();
-            //const feeinfo = await api.rpc.payment.queryFeeDetails(extrinsic.toHex(),blockHash);
+            feeInfo = await api.rpc.payment.queryInfo(extrinsic.toHex(),blockHash);
             //extr.fee = feeinfo.
         }
 
@@ -214,9 +214,9 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
               } else {
                 transfer.amount = JSON.parse(extr.params)[1]; // 'transfer' and 'transferKeepAlive' methods
               }
-              /*transfer.fee = !!feeInfo
-              ? new BigNumber(JSON.stringify(feeInfo.toJSON().partialFee)).toString(10)
-              : null;*/
+              transfer.fee = !!feeInfo
+              ? JSON.parse(feeInfo.toJSON().partialFee)
+              : null;
             const createdTransfer = new Transfermodel(transfer);
             createdTransfer.save();
         }
