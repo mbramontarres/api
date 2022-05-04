@@ -30,6 +30,9 @@ export class ExtrinsicType {
     signature: string;
 
     @Field()
+    signer: string;
+
+    @Field()
     nonce: string;
 
     @Field()

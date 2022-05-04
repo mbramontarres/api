@@ -9,6 +9,7 @@ import { BlockModule } from './block/block.module';
 import { ExtrinsicModule } from './extrinsic/extrinsic.module';
 import { EventModule } from './event/event.module';
 import { LogModule } from './log/log.module';
+import { TransferModule } from './transfer/transfer.module';
 import config from "../config/config";
 
 @Module({
@@ -22,7 +23,8 @@ import config from "../config/config";
     BlockModule,
     ExtrinsicModule,
     EventModule,
-    LogModule
+    LogModule,
+    TransferModule
   ],
   controllers: [AppController],
   providers: [AppService],

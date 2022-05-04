@@ -10,15 +10,11 @@ import { EventType } from '../event/event.dto';
 
 @Schema()
 @ObjectType()
-export class Extrinsic {
+export class Transfer {
 
     @Field(() => Int)
     @Prop()
     blockNum: number;
-
-    @Field(() => Number)
-    @Prop()
-    blockTimestamp: number;
 
     @Field(() => Int)
     @Prop()
@@ -32,37 +28,25 @@ export class Extrinsic {
     @Prop()
     method: string;
 
-    @Field(() => String)
+    @Field(() => Number)
     @Prop()
-    accountId: string;
+    blockTimestamp: number;
 
     @Field(() => String)
     @Prop()
-    signature: string;
+    hash: string;
 
     @Field(() => String)
     @Prop()
-    nonce: string;
-
+    source: string;
+    
     @Field(() => String)
     @Prop()
-    signer: string;
+    destination: string;
 
-    @Field(() => String)
+    @Field(() => Number)
     @Prop()
-    extrinsicHash: string;
-
-    @Field(() => Boolean)
-    @Prop()
-    success: boolean;
-
-    @Field(() => [EventType])
-    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }] })
-    events: Event[];
-
-    @Field(() => String)
-    @Prop()
-    params: string;
+    amount: number;
 
     @Field(() => Number)
     @Prop()
@@ -70,8 +54,14 @@ export class Extrinsic {
 
     @Field(() => Boolean)
     @Prop()
-    finalized: boolean;
+    success: boolean;
+    
+
+    @Field(() => [EventType])
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }] })
+    events: Event[];
+    
 }
 
-export type ExtrinsicDocument = Extrinsic & Document;
-export const ExtrinsicSchema = SchemaFactory.createForClass(Extrinsic);
+export type TransferDocument = Transfer & Document;
+export const TransferSchema = SchemaFactory.createForClass(Transfer);

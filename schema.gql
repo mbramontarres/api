@@ -59,6 +59,21 @@ type BlockType {
   finalized: Boolean!
 }
 
+type TransferType {
+  blockNum: Int!
+  extrinsicIndex: Int!
+  section: String!
+  method: String!
+  blockTimestamp: Float!
+  hash: String!
+  source: String!
+  destination: String!
+  amount: Float!
+  fee: Float!
+  success: Boolean!
+  events: [EventType!]!
+}
+
 input EventInputType {
   eventIndex: Int!
   blockNum: Int!
@@ -116,12 +131,29 @@ input BlockInputType {
   finalized: Boolean!
 }
 
+input TransferInputType {
+  blockNum: Int!
+  extrinsicIndex: Int!
+  section: String!
+  method: String!
+  blockTimestamp: Float!
+  hash: String!
+  source: String!
+  destination: String!
+  amount: Float!
+  fee: Float!
+  success: Boolean!
+  events: [EventInputType!]!
+}
+
 type Query {
   blocks(skip: Int = 0, take: Int = 25): [BlockType!]!
   block(blockNum: Float!): [BlockType!]!
   extrinsics: [ExtrinsicType!]!
   events: [EventType!]!
   logs: [LogType!]!
+  transfers(skip: Int = 0, take: Int = 25): [TransferType!]!
+  transfer(hash: String!): [TransferType!]!
 }
 
 type Mutation {

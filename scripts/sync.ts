@@ -11,6 +11,8 @@ import { EventType } from "../src/event/event.dto";
 import { LogSchema } from "../src/log/log.schema";
 import { LogType } from "../src/log/log.dto";
 import config from "../config/config";
+import { TransferSchema } from "../src/transfer/transfer.schema";
+import { TransferType } from "../src/transfer/dto/transfer.dto";
 
 async function Run(){
     const wsProvider = new WsProvider('wss://rpc.polkadot.io');
@@ -44,7 +46,9 @@ async function Run(){
             await addBlocksDb(db,api,lastHeader.number.toNumber());
         }*/
         //prova
-        await addBlocksDb(db,api,lastHeader.number.toNumber());
+        let users = await api.query.system.account.keys();
+        console.log(users.length);
+       await addBlocksDb(db,api,lastHeader.number.toNumber());
         /*else{
             //Find block gaps in db
             const gaps = await db.model('blocks',BlockSchema).aggregate([
@@ -85,6 +89,7 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
      //db.model('blocks', mongoose.Schema.)
      const Blockmodel =  db.model('blocks', BlockSchema);
      const Extmodel = db.model('extrinsics',ExtrinsicSchema);
+     const Transfermodel =  db.model('transfers', TransferSchema);
      const Eventmodel = db.model('events',EventSchema);
      const Logsmodel = db.model('logs',LogSchema);
      const extr = new ExtrinsicType;
@@ -131,6 +136,7 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
         extr.blockTimestamp = timestamp;
         extr.method = extrinsic.method.method;
         extr.blockNum = gap;
+        extr.signer = extrinsic.isSigned? extrinsic.signer.toString() : '';
         extr.extrinsicHash = extrinsic.hash.toHex();
         extr.extrinsicIndex = index;
         extr.params = JSON.stringify(extrinsic.method.args);
@@ -174,6 +180,46 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
          extr.events.push(createdEvent);
         });
 
+        if (extr.section === 'balances' && (extr.method === 'forceTransfer' ||
+            extr.method === 'transfer' ||
+            extr.method === 'transferAll' ||
+            extr.method === 'transferKeepAlive')) 
+        {
+            const transfer = new TransferType;
+            transfer.blockNum = extr.blockNum;
+            transfer.blockTimestamp = extr.blockTimestamp;
+            transfer.section = extr.section;
+            transfer.method = extr.method;
+            transfer.hash = extr.extrinsicHash;
+            transfer.events = extr.events;
+            transfer.success = extr.success;
+            transfer.source = extr.signer;
+            //const args = extrinsic.method.args;
+            if (JSON.parse(extr.params)[0].id) {
+                transfer.destination = JSON.parse(extr.params)[0].id;
+              } else if (JSON.parse(extr.params)[0].address20) {
+                transfer.destination = JSON.parse(extr.params)[0].address20;
+              } else {
+                transfer.destination = JSON.parse(extr.params)[0];
+            }
+            
+            if (extr.method === 'transferAll' && extr.success) {
+                // Equal source and destination addres doesn't trigger a balances.Transfer event
+                transfer.amount =JSON.parse(extr.params)[2];
+              } else if (extr.method === 'transferAll' && !extr.success) {
+                // no event is emitted so we can't get amount
+                transfer.amount = 0;
+              } else if (extr.method === 'forceTransfer') {
+                transfer.amount = JSON.parse(extr.params)[2];
+              } else {
+                transfer.amount = JSON.parse(extr.params)[1]; // 'transfer' and 'transferKeepAlive' methods
+              }
+              /*transfer.fee = !!feeInfo
+              ? new BigNumber(JSON.stringify(feeInfo.toJSON().partialFee)).toString(10)
+              : null;*/
+            const createdTransfer = new Transfermodel(transfer);
+            createdTransfer.save();
+        }
         const createdExtrinsic = new Extmodel(extr);
         createdExtrinsic.save();
 
