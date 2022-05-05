@@ -18,10 +18,10 @@ export class BlockService {
         return this.blockModel.find().sort({blockNum: -1}).skip(blockArgs.skip).limit(blockArgs.take).exec();
     }
 
-    public async findOne(num: Number): Promise<Block[]> 
+    public async findOne(num: Number): Promise<Block> 
     {
         //const { limit, offset } = blockArgs;
-        return this.blockModel.find({blockNum: num})
+        return this.blockModel.findOne({blockNum: num})
                     .populate('extrinsics')
                     .populate('events')
                     .populate('logs').exec();

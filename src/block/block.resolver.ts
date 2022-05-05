@@ -12,7 +12,7 @@ export class BlockResolver {
         return this.blockService.findAll(blocksArgs);
     }
 
-    @Query(returns => [BlockType])
+    @Query(returns => BlockType)
     async block(@Args('blockNum') blockNum: Number) {
         return this.blockService.findOne(blockNum);
     }

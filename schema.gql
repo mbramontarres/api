@@ -172,7 +172,7 @@ input AccountInputType {
 
 type Query {
   blocks(skip: Int = 0, take: Int = 25): [BlockType!]!
-  block(blockNum: Float!): [BlockType!]!
+  block(blockNum: Float!): BlockType!
   extrinsics: [ExtrinsicType!]!
   events: [EventType!]!
   logs: [LogType!]!
