@@ -10,6 +10,7 @@ import { ExtrinsicModule } from './extrinsic/extrinsic.module';
 import { EventModule } from './event/event.module';
 import { LogModule } from './log/log.module';
 import { TransferModule } from './transfer/transfer.module';
+import { AccountModule } from './account/account.module';
 import config from "../config/config";
 
 @Module({
@@ -24,7 +25,8 @@ import config from "../config/config";
     ExtrinsicModule,
     EventModule,
     LogModule,
-    TransferModule
+    TransferModule,
+    AccountModule
   ],
   controllers: [AppController],
   providers: [AppService],

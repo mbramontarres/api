@@ -3,7 +3,7 @@ import { ExtrinsicService } from './extrinsic.service';
 import { ExtrinsicResolver } from './extrinsic.resolver';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Extrinsic, ExtrinsicSchema } from './extrinsic.schema';
-import { EventModule } from 'src/event/event.module';
+import { EventModule } from '../event/event.module';
 
 @Module({
   imports: [EventModule, MongooseModule.forFeature([{ name: Extrinsic.name, schema: ExtrinsicSchema }])],

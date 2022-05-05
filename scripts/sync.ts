@@ -13,6 +13,8 @@ import { LogType } from "../src/log/log.dto";
 import config from "../config/config";
 import { TransferSchema } from "../src/transfer/transfer.schema";
 import { TransferType } from "../src/transfer/dto/transfer.dto";
+import { AccountSchema } from "../src/account/account.schema";
+import { AccountType } from "../src/account/dto/account.dto";
 
 async function Run(){
     const wsProvider = new WsProvider('wss://rpc.polkadot.io');
@@ -131,7 +133,7 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
      block.extrinsics = [];
      block.events = [];
      //Afegir parametres que falten
-     extrinsics.forEach(async (extrinsic,index) => {
+     await extrinsics.forEach( async (extrinsic,index) => {
         extr.section =  extrinsic.method.section;
         extr.blockTimestamp = timestamp;
         extr.method = extrinsic.method.method;
@@ -154,6 +156,7 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
           phase.asApplyExtrinsic.eq(index)
         );
         
+        const allaccounts = []
         extr.events = [];
         events.forEach((e,index) => {
          //Falten parametres
@@ -164,6 +167,8 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
          event.phase = e.phase.toString();
          event.doc = JSON.stringify(e.event.meta.docs.toJSON());
          event.blockTimestamp = timestamp;
+
+
         //look extrinsic success
         if (api.events.system.ExtrinsicSuccess.is(e.event)) {
             extr.success = true;
@@ -173,12 +178,38 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
         }
 
 
+        //Accounts
+        if(extr.section === 'balances'){
+            const types = e.event.typeDef;
+            e.event.data.forEach((d,i) => {
+                if ( types[i].type === 'AccountId32'){
+                    console.log("prov");
+                    if(!allaccounts.includes(d.toString())){
+                        console.log("inserint acc");
+                        allaccounts.push(d.toString());
+                    }
+                }
+            });
+        }
+
          const createdEvent = new Eventmodel(event);
          createdEvent.save();
 
          block.events.push(createdEvent);
          extr.events.push(createdEvent);
         });
+
+
+        //Add Accounts
+        await Promise.all(
+            allaccounts.map((acc) =>
+            addOrReplaceAccount(
+                api,
+                acc,
+                db,
+              ),
+            ),
+          );
 
         if (extr.section === 'balances' && (extr.method === 'forceTransfer' ||
             extr.method === 'transfer' ||
@@ -254,6 +285,27 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
      console.log(`Block ${gap} added`);
      //block.save();
      //const parentHash = header.parentHash
+}
+
+export const addOrReplaceAccount = async (api: ApiPromise,account: string,db): Promise<void> =>{
+    const Addressmodel =  db.model('accounts', AccountSchema);
+    const acc = new AccountType;
+
+    const balance = await api.derive.balances.all(account);
+    acc.accountId =  balance.accountId.toHuman();
+    acc.availableBalance = balance.availableBalance.toString();
+    acc.freeBalance = balance.freeBalance.toString();
+    acc.lockedBalance = balance.lockedBalance.toString();
+    acc.reservedBalance = balance.reservedBalance.toString();
+    acc.totalBalance = balance.freeBalance.add(balance.reservedBalance).toString();
+    acc.nonce = balance.accountNonce.toNumber();
+
+   // const createdAccount = new Addressmodel(acc);
+    //createdAccount.update()
+    //mongoose.set('debug', true);
+    await Addressmodel.updateOne({accountId: acc.accountId.toString()},acc,{upsert: true});
+    //mongoose.set('debug', false);
+
 }
 
 Run();

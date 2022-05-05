@@ -25,6 +25,7 @@ type ExtrinsicType {
   method: String!
   accountId: String!
   signature: String!
+  signer: String!
   nonce: String!
   extrinsicHash: String!
   success: Boolean!
@@ -74,6 +75,17 @@ type TransferType {
   events: [EventType!]!
 }
 
+type AccountType {
+  accountId: String!
+  nonce: Float!
+  availableBalance: String!
+  freeBalance: String!
+  lockedBalance: String!
+  reservedBalance: String!
+  totalBalance: String!
+  transfers: [TransferType!]!
+}
+
 input EventInputType {
   eventIndex: Int!
   blockNum: Int!
@@ -97,6 +109,7 @@ input ExtrinsicInputType {
   method: String!
   accountId: String!
   signature: String!
+  signer: String!
   nonce: String!
   extrinsicHash: String!
   success: Boolean!
@@ -146,6 +159,17 @@ input TransferInputType {
   events: [EventInputType!]!
 }
 
+input AccountInputType {
+  accountId: String!
+  nonce: Float!
+  availableBalance: String!
+  freeBalance: String!
+  lockedBalance: String!
+  reservedBalance: String!
+  totalBalance: String!
+  transfers: [TransferInputType!]!
+}
+
 type Query {
   blocks(skip: Int = 0, take: Int = 25): [BlockType!]!
   block(blockNum: Float!): [BlockType!]!
@@ -154,6 +178,8 @@ type Query {
   logs: [LogType!]!
   transfers(skip: Int = 0, take: Int = 25): [TransferType!]!
   transfer(hash: String!): [TransferType!]!
+  accounts(skip: Int = 0, take: Int = 25): [AccountType!]!
+  account(accountId: String!): [AccountType!]!
 }
 
 type Mutation {
