@@ -17,7 +17,7 @@ import { AccountSchema } from "../src/account/account.schema";
 import { AccountType } from "../src/account/dto/account.dto";
 
 async function Run(){
-    const wsProvider = new WsProvider('wss://rpc.polkadot.io');
+    const wsProvider = new WsProvider(config.wsProviderUrl);
     const api = await ApiPromise.create({ provider: wsProvider });
 
 
@@ -82,8 +82,8 @@ async function findGaps(db,api: ApiPromise, lastHeader){
           $addFields: {missing: {$setDifference: [{$range: [0,lastHeader]},"$nos"]}}
         }])
     
-    gaps.forEach(gap => {
-        addBlocksDb(db,api,gap);
+    gaps.forEach(async gap => {
+         await addBlocksDb(db,api,gap);
     });
 }
 
@@ -183,9 +183,7 @@ async function addBlocksDb(db,api: ApiPromise,gap) {
             const types = e.event.typeDef;
             e.event.data.forEach((d,i) => {
                 if ( types[i].type === 'AccountId32'){
-                    console.log("prov");
                     if(!allaccounts.includes(d.toString())){
-                        console.log("inserint acc");
                         allaccounts.push(d.toString());
                     }
                 }
