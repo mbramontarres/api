@@ -12,7 +12,7 @@ export class AccountResolver {
         return this.accountService.findAll(accountArgs);
     }
 
-    @Query(returns => [AccountType])
+    @Query(returns => AccountType)
     async account(@Args('accountId') accountId: String) {
         return this.accountService.findOne(accountId);
     }

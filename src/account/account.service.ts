@@ -15,10 +15,10 @@ export class AccountService {
         return this.blockModel.find().sort({blockNum: -1}).skip(accountArgs.skip).limit(accountArgs.take).exec();
     }
 
-    public async findOne(id: String): Promise<Account[]> 
+    public async findOne(id: String): Promise<Account> 
     {
         //const { limit, offset } = blockArgs;
-        return this.blockModel.find({accountId: id})
+        return this.blockModel.findOne({accountId: id})
                     .populate('transfers').exec();
     }
 }

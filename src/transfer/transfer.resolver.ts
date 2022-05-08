@@ -13,6 +13,11 @@ export class TransferResolver {
     }
 
     @Query(returns => [TransferType])
+    async accountTransfers(@Args('accountId') accountId:string, @Args() blocksArgs: TransferArgs) {
+        return this.transferService.findAccountTransfers(accountId,blocksArgs);
+    }
+
+    @Query(returns => TransferType)
     async transfer(@Args('hash') hash: String) {
         return this.transferService.findOne(hash);
     }

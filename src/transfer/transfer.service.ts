@@ -14,10 +14,16 @@ export class TransferService {
         return this.transferModel.find().sort({blockNum: -1}).skip(transferArgs.skip).limit(transferArgs.take).exec();
     }
 
-    public async findOne(hash: String): Promise<Transfer[]> 
+    public async findAccountTransfers(accountId:String, transferArgs: TransferArgs): Promise<Transfer[]> 
+    {
+
+        return this.transferModel.find({ $or: [ { source: accountId   }, { destination: accountId } ] }).sort({blockNum: -1}).skip(transferArgs.skip).limit(transferArgs.take).exec();
+    }
+
+    public async findOne(hash: String): Promise<Transfer> 
     {
         //const { limit, offset } = blockArgs;
-        return this.transferModel.find({hash: hash})
+        return this.transferModel.findOne({hash: hash})
                     .populate('events').exec();
     }
 }

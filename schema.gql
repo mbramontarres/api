@@ -177,9 +177,10 @@ type Query {
   events: [EventType!]!
   logs: [LogType!]!
   transfers(skip: Int = 0, take: Int = 25): [TransferType!]!
-  transfer(hash: String!): [TransferType!]!
+  accountTransfers(accountId: String!, skip: Int = 0, take: Int = 25): [TransferType!]!
+  transfer(hash: String!): TransferType!
   accounts(skip: Int = 0, take: Int = 25): [AccountType!]!
-  account(accountId: String!): [AccountType!]!
+  account(accountId: String!): AccountType!
 }
 
 type Mutation {
