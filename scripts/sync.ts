@@ -15,7 +15,7 @@ import { TransferSchema } from "../src/transfer/transfer.schema";
 import { TransferType } from "../src/transfer/dto/transfer.dto";
 import { AccountSchema } from "../src/account/account.schema";
 import { AccountType } from "../src/account/dto/account.dto";
-import { addLogs, processBlockData } from "./helpers/blockData";
+import { addLogs, getAccountProperies, processBlockData } from "./helpers/blockData";
 
 async function Run(){
     const wsProvider = new WsProvider(config.wsProviderUrl);
@@ -29,7 +29,10 @@ async function Run(){
             console.log("Couldn't connect to MongoDb Database",error);
         }
     );
+
+    //Promise.all(findGaps(db,api,null), processAllAccounts(api))
     //findGaps(db,api,null);
+    //await processAllAccounts(api);
     const chain = await api.rpc.system.chain();
     await api.rpc.chain.subscribeNewHeads(async (lastHeader) => {
         console.log(`${chain}: last block #${lastHeader.number} has hash ${lastHeader.hash}`);
@@ -38,6 +41,19 @@ async function Run(){
 
     });
 
+}
+
+async function processAllAccounts(api) {
+  const accounts = await api.query.system.account.keys();
+  const accountsIds = accounts.map(({ args }) => args).map(([e]) => e.toHuman());
+  //parallize
+
+  accountsIds.forEach(async a=> {
+    const acc  = await getAccountProperies(api,a);
+    //Afegir si no existeix;
+    
+  });
+  //console.log(accounts.map(({ args }) => args).map(([e]) => e.toHuman()));
 }
 
 async function findGaps(db,api: ApiPromise, lastHeader){
@@ -199,7 +215,7 @@ async function addBlocksDb(db,api: ApiPromise,blockNum) {
      block.extrinsics = [];
      block.events = [];
      //Afegir parametres que falten
-    await processBlockData(api,db,extrinsics,allevents,blockNum,blockHash,block);    
+    await processBlockData(api,db,extrinsics,allevents,blockNum,blockHash,block,timestamp);    
 
     await addLogs(Logsmodel,extendedBlock,block,blockNum);
 

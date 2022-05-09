@@ -12,9 +12,7 @@ import { TransferType } from "../../src/transfer/dto/transfer.dto";
 import { AccountSchema } from "../../src/account/account.schema";
 import { AccountType } from "../../src/account/dto/account.dto";
 
-
-export const addOrReplaceAccount = async (api: ApiPromise,account: string,db): Promise<void> =>{
-    const Addressmodel =  db.model('accounts', AccountSchema);
+export const getAccountProperies = async(api: ApiPromise,account: string): Promise<AccountType> => {
     const acc = new AccountType;
 
     const balance = await api.derive.balances.all(account);
@@ -26,6 +24,13 @@ export const addOrReplaceAccount = async (api: ApiPromise,account: string,db): P
     acc.totalBalance = balance.freeBalance.add(balance.reservedBalance).toString();
     acc.nonce = balance.accountNonce.toNumber();
 
+    return acc;
+}
+
+export const addOrReplaceAccount = async (api: ApiPromise,account: string,db): Promise<void> =>{
+    const Addressmodel =  db.model('accounts', AccountSchema);
+
+    const acc = await getAccountProperies(api,account);
 
     //mongoose.set('debug', true);
     await Addressmodel.updateOne({accountId: acc.accountId.toString()},acc,{upsert: true});
@@ -76,15 +81,13 @@ export const addTransfer = async (Transfermodel,db,extr,feeInfo): Promise<void> 
     }
     
     if (extr.method === 'transferAll' && extr.success) {
-        // Equal source and destination addres doesn't trigger a balances.Transfer event
         transfer.amount =JSON.parse(extr.params)[2];
         } else if (extr.method === 'transferAll' && !extr.success) {
-        // no event is emitted so we can't get amount
         transfer.amount = 0;
         } else if (extr.method === 'forceTransfer') {
         transfer.amount = JSON.parse(extr.params)[2];
         } else {
-        transfer.amount = JSON.parse(extr.params)[1]; // 'transfer' and 'transferKeepAlive' methods
+        transfer.amount = JSON.parse(extr.params)[1]; 
         }
         transfer.fee = !!feeInfo
         ? JSON.parse(feeInfo.toJSON().partialFee)
@@ -93,7 +96,7 @@ export const addTransfer = async (Transfermodel,db,extr,feeInfo): Promise<void> 
     createdTransfer.save();
 }
 
-export const processBlockData = async (api: ApiPromise,db,extrinsics,allevents,blockNum,blockHash,block): Promise<void> =>{
+export const processBlockData = async (api: ApiPromise,db,extrinsics,allevents,blockNum,blockHash,block,timestamp): Promise<void> =>{
     const Transfermodel =  db.model('transfers', TransferSchema);
     const Extmodel = db.model('extrinsics',ExtrinsicSchema);
     const Eventmodel = db.model('events',EventSchema);
@@ -102,7 +105,7 @@ export const processBlockData = async (api: ApiPromise,db,extrinsics,allevents,b
     await extrinsics.forEach( async (extrinsic,index) => {
         const extr = new ExtrinsicType;
         extr.section =  extrinsic.method.section;
-        //extr.blockTimestamp = timestamp;
+        extr.blockTimestamp = timestamp;
         extr.method = extrinsic.method.method;
         extr.blockNum = blockNum;
         extr.signer = extrinsic.isSigned? extrinsic.signer.toString() : '';
@@ -185,7 +188,7 @@ export const processBlockData = async (api: ApiPromise,db,extrinsics,allevents,b
 
 
             //Add Transfer
-            
+            await addTransfer(Transfermodel,db,extr,feeInfo)
         }
         const createdExtrinsic = new Extmodel(extr);
         createdExtrinsic.save();
