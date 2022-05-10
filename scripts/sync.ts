@@ -34,10 +34,10 @@ async function Run(){
     if(buit.length==0){
       console.log("primer block");
       const last = await api.rpc.chain.getHeader();
-      await addBlocksDb(db,api,last.number);
+      await addBlocksDb(db,api,last.number,true);
     }
 
-    Promise.all([ findGaps(db,api,null),  processAllAccounts(api,db),  listenBlocks(api,db)])
+    Promise.all([ /*findGaps(db,api,null)*/,  processAllAccounts(api,db),  listenBlocks(api,db)])
     //findGaps(db,api,null);
     //await processAllAccounts(api);
     
@@ -49,7 +49,7 @@ async function listenBlocks(api,db){
   await api.rpc.chain.subscribeNewHeads(async (lastHeader) => {
       console.log(`${chain}: last block #${lastHeader.number} has hash ${lastHeader.hash}`);
 
-     await addBlocksDb(db,api,lastHeader.number.toNumber());
+     await addBlocksDb(db,api,lastHeader.number.toNumber(),true);
 
   });
 }
@@ -57,16 +57,20 @@ async function listenBlocks(api,db){
 async function processAllAccounts(api,db) {
   console.log("Thread Accounts Started")
   const accounts = await api.query.system.account.keys();
-  const accountsIds = accounts.map(({ args }) => args).map(([e]) => e.toHuman());
+  let accountsIds = accounts.map(({ args }) => args).map(([e]) => e.toHuman());
   //parallize
   console.log("Thread Accounts: accounts trobades.")
-  accountsIds.forEach(async a=> {
-    await addOrReplaceAccount(api,a,db);
-    //const acc  = await getAccountProperies(api,a);
-    //Afegir si no existeix;
+  let result = []
+  for (let i = 0; i < accountsIds.length; i += 20) {
+    let chunk = accountsIds.slice(i, i + 20)
+    result.push(chunk)
+  }
+  result.forEach( a=> {
+    a.forEach(async account =>{
+      await addOrReplaceAccount(api,account,db,false);
+  })
     
   });
-  //console.log(accounts.map(({ args }) => args).map(([e]) => e.toHuman()));
 }
 
 async function findGaps(db,api: ApiPromise, lastHeader){
@@ -179,14 +183,14 @@ async function findGaps(db,api: ApiPromise, lastHeader){
     gaps.forEach(async gap => {
       let block = gap.left;
         while(block<=gap.right){
-          await addBlocksDb(db,api,block);
+          await addBlocksDb(db,api,block,false);
           block++;
         }
         console.log("Gaps Thread Started:Gap afegit")
     });
 }
 
-async function addBlocksDb(db,api: ApiPromise,blockNum) {
+async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
      //db.model('blocks', mongoose.Schema.)
      const Blockmodel =  db.model('blocks', BlockSchema);
      const Extmodel = db.model('extrinsics',ExtrinsicSchema);
@@ -234,7 +238,7 @@ async function addBlocksDb(db,api: ApiPromise,blockNum) {
      block.extrinsics = [];
      block.events = [];
      //Afegir parametres que falten
-    await processBlockData(api,db,extrinsics,allevents,blockNum,blockHash,block,timestamp);    
+    await processBlockData(api,db,extrinsics,allevents,blockNum,blockHash,block,timestamp,updateAccount);    
 
     await addLogs(Logsmodel,extendedBlock,block,blockNum);
 
