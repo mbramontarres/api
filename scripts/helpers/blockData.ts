@@ -6,6 +6,7 @@ import { EventSchema } from "../../src/event/event.schema";
 import { EventType } from "../../src/event/event.dto";
 import { EventRecord } from '@polkadot/types/interfaces';
 import { LogType } from "../../src/log/log.dto";
+import BigNumber from 'bignumber.js';
 
 import { TransferSchema } from "../../src/transfer/transfer.schema";
 import { TransferType } from "../../src/transfer/dto/transfer.dto";
@@ -101,116 +102,130 @@ export const addTransfer = async (Transfermodel,db,extr,feeInfo, allevents: Even
         } else {
         transfer.amount = JSON.parse(extr.params)[1]; 
         }
-        transfer.fee = !!feeInfo
-        ? JSON.parse(feeInfo.toJSON().partialFee)
-        : 0;
+        /*transfer.fee = !!feeInfo
+        ? Number(new BigNumber(JSON.stringify(feeInfo.toJSON().partialFee)))
+        : 0;*/
     const createdTransfer = new Transfermodel(transfer);
     createdTransfer.save();
 }
 
-export const processBlockData = async (api: ApiPromise,db,extrinsics,allevents,blockNum,blockHash,block,timestamp, updateAccount:boolean): Promise<void> =>{
+export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,blockNum,blockHash,block,timestamp, updateAccount:boolean): Promise<void> =>{
     const Transfermodel =  db.model('transfers', TransferSchema);
     const Extmodel = db.model('extrinsics',ExtrinsicSchema);
     const Eventmodel = db.model('events',EventSchema);
     
+    var i = 0;
+    try{
+        extrinsics.forEach( (extrinsic,index) => {
+            const extr = new ExtrinsicType;
+            extr.section =  extrinsic.method.section;
+            extr.blockTimestamp = timestamp;
+            extr.method = extrinsic.method.method;
+            extr.blockNum = blockNum;
+            extr.signer = extrinsic.isSigned? extrinsic.signer.toString() : '';
+            extr.extrinsicHash = extrinsic.hash.toHex();
+            extr.extrinsicIndex = index;
+            extr.params = JSON.stringify(extrinsic.method.args);
+            let feeInfo = null;
+            if(extrinsic.isSigned){
+                //extr.nonce = extrinsic.nonce.toString();
+                feeInfo =  api.rpc.payment.queryInfo(extrinsic.toHex(),blockHash);
+                //extr.fee = feeinfo.
+            }
+            console.log("extrinsic: "+extr.extrinsicIndex+ " block:"+ extr.blockNum);
+            //Processar events de l'extrinsic
+            const events = allevents.filter(({ phase }) =>phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index));
+            
+            const allaccounts = []
+            extr.events = [];
+            
+            events.forEach(e => {
+            const event = new EventType;
+             //Falten parametres
+             event.blockNum = blockNum;
+             event.extrinsicIndex = extr.extrinsicIndex;
+             event.eventIndex = i;
+             event.section = e.event.section;
+             event.method = e.event.method;
+             event.phase = e.phase.toString();
+             event.doc = JSON.stringify(e.event.meta.docs.toJSON());
+             //event.blockTimestamp = timestamp;
     
-    await extrinsics.forEach( async (extrinsic,index) => {
-        const extr = new ExtrinsicType;
-        extr.section =  extrinsic.method.section;
-        extr.blockTimestamp = timestamp;
-        extr.method = extrinsic.method.method;
-        extr.blockNum = blockNum;
-        extr.signer = extrinsic.isSigned? extrinsic.signer.toString() : '';
-        extr.extrinsicHash = extrinsic.hash.toHex();
-        extr.extrinsicIndex = index;
-        extr.params = JSON.stringify(extrinsic.method.args);
-        let feeInfo = null;
-        if(extrinsic.isSigned){
-            //extr.nonce = extrinsic.nonce.toString();
-            feeInfo = await api.rpc.payment.queryInfo(extrinsic.toHex(),blockHash);
-            //extr.fee = feeinfo.
-        }
-
-        //Processar events
-        const events = allevents;
-        /*.filter(({ phase }) =>
-          phase.isApplyExtrinsic &&
-          phase.asApplyExtrinsic.eq(index)
-        );*/
-        
-        const allaccounts = []
-        extr.events = [];
-        events.forEach( async (e,index) => {
-        const event = new EventType;
-         //Falten parametres
-         event.blockNum = blockNum;
-         event.eventIndex = index;
-         event.section = e.event.section;
-         event.method = e.event.method;
-         event.phase = e.phase.toString();
-         event.doc = JSON.stringify(e.event.meta.docs.toJSON());
-         //event.blockTimestamp = timestamp;
-
-
-        //look extrinsic success
-        if (api.events.system.ExtrinsicSuccess.is(e.event)) {
-            extr.success = true;
-        } 
-        else{
-            extr.success = false;
-        }
-
-
-        //Accounts
-        if(extr.section === 'balances'){
-            const types = e.event.typeDef;
-            e.event.data.forEach((d,i) => {
-                if ( types[i].type === 'AccountId32'){
-                    if(!allaccounts.includes(d.toString())){
-                        allaccounts.push(d.toString());
+    
+            //look extrinsic success
+            if (api.events.system.ExtrinsicSuccess.is(e.event)) {
+                extr.success = true;
+            } 
+            else{
+                extr.success = false;
+            }
+    
+    
+            //Accounts
+            if(extr.section === 'balances'){
+                const types = e.event.typeDef;
+                e.event.data.forEach((d,i) => {
+                    if ( types[i].type === 'AccountId32'){
+                        if(!allaccounts.includes(d.toString())){
+                            allaccounts.push(d.toString());
+                        }
                     }
-                }
+                });
+            }
+    
+            
+    
+             const createdEvent = new Eventmodel(event);
+             createdEvent.save();
+             i++;
+             //console.log("extrinsic: "+event.extrinsicIndex+ " events:"+ event.eventIndex);
+             block.events.push(createdEvent);
+             extr.events.push(createdEvent);
             });
-        }
-
-        
-
-         const createdEvent = new Eventmodel(event);
-         createdEvent.save();
-
-         block.events.push(createdEvent);
-         extr.events.push(createdEvent);
-        });
-
-
-        //Add Accounts
-        await Promise.all(
-            allaccounts.map((acc) =>
-            addOrReplaceAccount(
-                api,
-                acc,
-                db,
-                updateAccount,
-              ),
-            ),
-          );
-
-        if (extr.section === 'balances' && (extr.method === 'forceTransfer' ||
-            extr.method === 'transfer' ||
-            extr.method === 'transferAll' ||
-            extr.method === 'transferKeepAlive')) 
-        {
-
-
-            //Add Transfer
-            await addTransfer(Transfermodel,db,extr,feeInfo,allevents)
-        }
-        const createdExtrinsic = new Extmodel(extr);
-        createdExtrinsic.save();
-
-        //Guardem referencia extrinsic a block
-        block.extrinsics.push(createdExtrinsic);
-        //save created
-     });
-
+    
+    
+            //Add Accounts
+             Promise.all(
+                allaccounts.map((acc) =>
+                addOrReplaceAccount(
+                    api,
+                    acc,
+                    db,
+                    updateAccount,
+                  ),
+                ),
+              );
+    
+            if (extr.section === 'balances' && (extr.method === 'forceTransfer' ||
+                extr.method === 'transfer' ||
+                extr.method === 'transferAll' ||
+                extr.method === 'transferKeepAlive')) 
+            {
+                //Add Transfer
+                addTransfer(Transfermodel,db,extr,feeInfo,allevents)
+            }
+            const createdExtrinsic = new Extmodel(extr);
+            
+           // console.log(extr.extrinsicIndex);
+           //console.log("extrinsic: "+extr.extrinsicIndex+ " blocks:"+ extr.blockNum);
+            //createdExtrinsic.save();
+            //Guardem referencia extrinsic a block
+            try{
+                createdExtrinsic.save();
+                //console.log("extrinsic afegit");
+                block.extrinsics.push(createdExtrinsic);
+            }
+            catch{
+                console.log("hola");
+            }
+            
+            
+            //save created
+         });
+         
+    }
+    catch(e){
+        console.log("hola");
+    }
+    
 }

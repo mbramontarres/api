@@ -37,7 +37,7 @@ async function Run(){
       await addBlocksDb(db,api,last.number,true);
     }
 
-    Promise.all([ /*findGaps(db,api,null)*/,  processAllAccounts(api,db),  listenBlocks(api,db)])
+    Promise.all([ findGaps(db,api,null),  processAllAccounts(api,db),  listenBlocks(api,db)])
     //findGaps(db,api,null);
     //await processAllAccounts(api);
     
@@ -234,7 +234,7 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
      
      //Processar contingut block
      const allevents = extendedBlock.events;
-     let extrinsics = extendedBlock.block.extrinsics;
+     let extrinsics = await extendedBlock.block.extrinsics;
      block.extrinsics = [];
      block.events = [];
      //Afegir parametres que falten
@@ -243,6 +243,7 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
     await addLogs(Logsmodel,extendedBlock,block,blockNum);
 
      const createdBlock = new Blockmodel(block);
+     block.extrinsics.map(e => console.log("fora:" +e.method));
      await Blockmodel.updateOne({blockNum: block.blockNum},block,{upsert: true});
      
      //createdBlock.save();
