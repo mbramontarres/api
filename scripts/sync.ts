@@ -37,7 +37,7 @@ async function Run(){
       await addBlocksDb(db,api,last.number,true);
     }
 
-    Promise.all([ findGaps(db,api,null),  processAllAccounts(api,db),  listenBlocks(api,db)])
+    Promise.all([ /*findGaps(db,api,null)*/,  processAllAccounts(api,db),  listenBlocks(api,db)])
     //findGaps(db,api,null);
     //await processAllAccounts(api);
     

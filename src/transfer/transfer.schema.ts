@@ -48,7 +48,7 @@ export class Transfer {
     @Prop()
     amount: number;
 
-    @Field(() => Number)
+    @Field(() => Number, { nullable: true })
     @Prop()
     fee: number;
 

@@ -33,7 +33,7 @@ export class TransferType {
     @Field(() => Number)
     amount: number;
 
-    @Field(() => Number)
+    @Field(() => Number, { nullable: true })
     fee: number;
 
     @Field(() => Boolean)

@@ -6,7 +6,6 @@ import { EventSchema } from "../../src/event/event.schema";
 import { EventType } from "../../src/event/event.dto";
 import { EventRecord } from '@polkadot/types/interfaces';
 import { LogType } from "../../src/log/log.dto";
-import BigNumber from 'bignumber.js';
 
 import { TransferSchema } from "../../src/transfer/transfer.schema";
 import { TransferType } from "../../src/transfer/dto/transfer.dto";
@@ -102,13 +101,17 @@ export const addTransfer = async (Transfermodel,db,extr,feeInfo, allevents: Even
         } else {
         transfer.amount = JSON.parse(extr.params)[1]; 
         }
-        /*transfer.fee = !!feeInfo
-        ? Number(new BigNumber(JSON.stringify(feeInfo.toJSON().partialFee)))
-        : 0;*/
+
+        //si no està signat no tenim fee
+        let info = await feeInfo;
+        //console.log(info.toJSON().partialFee)  
+            transfer.fee = !! await feeInfo
+            ? info.toJSON().partialFee
+            : 0;
+        
     const createdTransfer = new Transfermodel(transfer);
     createdTransfer.save();
 }
-
 export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,blockNum,blockHash,block,timestamp, updateAccount:boolean): Promise<void> =>{
     const Transfermodel =  db.model('transfers', TransferSchema);
     const Extmodel = db.model('extrinsics',ExtrinsicSchema);
