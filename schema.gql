@@ -70,7 +70,7 @@ type TransferType {
   source: String!
   destination: String!
   amount: Float!
-  fee: Float!
+  fee: Float
   success: Boolean!
   events: [EventType!]!
 }
@@ -154,7 +154,7 @@ input TransferInputType {
   source: String!
   destination: String!
   amount: Float!
-  fee: Float!
+  fee: Float
   success: Boolean!
   events: [EventInputType!]!
 }

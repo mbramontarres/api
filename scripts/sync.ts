@@ -37,7 +37,7 @@ async function Run(){
       await addBlocksDb(db,api,last.number,true);
     }
 
-    Promise.all([ /*findGaps(db,api,null)*/,  processAllAccounts(api,db),  listenBlocks(api,db)])
+    Promise.all([ findGaps(db,api,null),  processAllAccounts(api,db),  listenBlocks(api,db)])
     //findGaps(db,api,null);
     //await processAllAccounts(api);
     
@@ -60,7 +60,7 @@ async function processAllAccounts(api,db) {
   let accountsIds = accounts.map(({ args }) => args).map(([e]) => e.toHuman());
   //parallize
   console.log("Thread Accounts: accounts trobades.")
-  let result = []
+  /*let result = []
   for (let i = 0; i < accountsIds.length; i += 20) {
     let chunk = accountsIds.slice(i, i + 20)
     result.push(chunk)
@@ -70,8 +70,36 @@ async function processAllAccounts(api,db) {
       await addOrReplaceAccount(api,account,db,false);
   })
     
+  });*/
+  Object.defineProperty(Array.prototype, 'chunk', {
+    value: function(chunkSize) {
+        var that = this;
+        //@ts-ignore
+        return Array(Math.ceil(that.length/chunkSize)).fill().map(async function(_,i){
+            return that.slice(i*chunkSize,i*chunkSize+chunkSize);
+            
+        });
+    }
   });
+  var result = accountsIds.chunk(20);
+  for(const r of result){
+    await r;
+    await Promise.all(
+      r.map((accId: any) =>
+      addOrReplaceAccount(api,accId,db,false),
+      ),
+    );
+  }
+  /*result.forEach( a => {
+    
+    console.log(a);
+    a.forEach(async account =>{
+      await 
+  })
+});*/
 }
+
+
 
 async function findGaps(db,api: ApiPromise, lastHeader){
   console.log("Gaps Thread Started")
@@ -243,13 +271,11 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
     await addLogs(Logsmodel,extendedBlock,block,blockNum);
 
      const createdBlock = new Blockmodel(block);
-     block.extrinsics.map(e => console.log("fora:" +e.method));
+     //block.extrinsics.map(e => console.log("fora:" +e.method));
      await Blockmodel.updateOne({blockNum: block.blockNum},block,{upsert: true});
      
+     console.log("Block: " + blockNum + " added")
      //createdBlock.save();
-
-
-     console.log(`Block ${blockNum} added`);
 }
 
 

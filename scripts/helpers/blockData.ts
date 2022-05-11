@@ -135,7 +135,7 @@ export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,
                 feeInfo =  api.rpc.payment.queryInfo(extrinsic.toHex(),blockHash);
                 //extr.fee = feeinfo.
             }
-            console.log("extrinsic: "+extr.extrinsicIndex+ " block:"+ extr.blockNum);
+            //console.log("extrinsic: "+extr.extrinsicIndex+ " block:"+ extr.blockNum);
             //Processar events de l'extrinsic
             const events = allevents.filter(({ phase }) =>phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index));
             
