@@ -37,7 +37,7 @@ async function Run(){
       await addBlocksDb(db,api,last.number,true);
     }
 
-    Promise.all([ findGaps(db,api,null),  processAllAccounts(api,db),  listenBlocks(api,db)])
+    Promise.all([ /*findGaps(db,api,null)*/,  /*processAllAccounts(api,db)*/,  listenBlocks(api,db)])
     //findGaps(db,api,null);
     //await processAllAccounts(api);
     
@@ -45,15 +45,37 @@ async function Run(){
 }
 
 async function listenBlocks(api,db){
+  const Blockmodel =  db.model('blocks', BlockSchema);
   const chain = await api.rpc.system.chain();
   await api.rpc.chain.subscribeNewHeads(async (lastHeader) => {
       console.log(`${chain}: last block #${lastHeader.number} has hash ${lastHeader.hash}`);
 
      await addBlocksDb(db,api,lastHeader.number.toNumber(),true);
 
+     
+     //Mirar finalitzats
+     const finalizedHash = await api.rpc.chain.getFinalizedHead();
+     const finalizedBlock =  await api.rpc.chain.getBlock(finalizedHash);
+     const tofinalize = await Blockmodel.find({blockNum: {$lte:finalizedBlock.block.header.number.toNumber()},finalized: false});
+     tofinalize.forEach(async f =>{
+      const blockHash = await api.rpc.chain.getBlockHash(f.blockNum);
+      const extendedBlock = await api.derive.chain.getHeader(blockHash);
+      //console.log(extendedBlock.digest);
+      const parentHash = extendedBlock.parentHash;
+      const extrinsicsRoot = extendedBlock.extrinsicsRoot;
+      const blockAuthor = extendedBlock.author.toString();
+      const stateRoot = extendedBlock.stateRoot;
+
+      await Blockmodel.updateOne({blockNum:f.blockNum},{blockHash:blockHash,blockAuthor:blockAuthor,extrinsicsRoot:extrinsicsRoot,parentHash:parentHash,stateRoot:stateRoot,finalized: true});
+     });
+     //console.log(finalizedBlock.block.header.number.toNumber());
+      //actualitzar propietat finalitzat
+     //await Blockmodel.updateMany({blockNum: {$lte:finalizedBlock.block.header.number.toNumber()},finalized: false},{$set:{finalized:true}});
   });
 }
+async function processFinalized(){
 
+}
 async function processAllAccounts(api,db) {
   console.log("Thread Accounts Started")
   const accounts = await api.query.system.account.keys();
@@ -69,8 +91,9 @@ async function processAllAccounts(api,db) {
     a.forEach(async account =>{
       await addOrReplaceAccount(api,account,db,false);
   })
-    
+  
   });*/
+  console.log(accounts)
   Object.defineProperty(Array.prototype, 'chunk', {
     value: function(chunkSize) {
         var that = this;
@@ -81,14 +104,13 @@ async function processAllAccounts(api,db) {
         });
     }
   });
-  var result = accountsIds.chunk(20);
-  for(const r of result){
-    await r;
-    await Promise.all(
-      r.map((accId: any) =>
-      addOrReplaceAccount(api,accId,db,false),
-      ),
-    );
+  var result =  accountsIds.chunk(20);
+  console.log(result)
+  for(var r of result){
+    console.log(r)
+    r.then( value => { value.map(async (accId: any) =>
+      await addOrReplaceAccount(api,accId,db,false),
+      )});
   }
   /*result.forEach( a => {
     
