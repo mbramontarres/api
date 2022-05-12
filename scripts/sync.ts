@@ -37,7 +37,7 @@ async function Run(){
       await addBlocksDb(db,api,last.number,true);
     }
 
-    Promise.all([ /*findGaps(db,api,null)*/,  /*processAllAccounts(api,db)*/,  listenBlocks(api,db)])
+    Promise.all([ /*findGaps(db,api,null)*/,  processAllAccounts(api,db),  listenBlocks(api,db)])
     //findGaps(db,api,null);
     //await processAllAccounts(api);
     
@@ -58,12 +58,14 @@ async function listenBlocks(api,db){
      const finalizedBlock =  await api.rpc.chain.getBlock(finalizedHash);
      const tofinalize = await Blockmodel.find({blockNum: {$lte:finalizedBlock.block.header.number.toNumber()},finalized: false});
      tofinalize.forEach(async f =>{
+      
       const blockHash = await api.rpc.chain.getBlockHash(f.blockNum);
       const extendedBlock = await api.derive.chain.getHeader(blockHash);
-      //console.log(extendedBlock.digest);
+    
+      //console.log(extendedBlock);
       const parentHash = extendedBlock.parentHash;
       const extrinsicsRoot = extendedBlock.extrinsicsRoot;
-      const blockAuthor = extendedBlock.author.toString();
+      const blockAuthor =extendedBlock.author.toString();
       const stateRoot = extendedBlock.stateRoot;
 
       await Blockmodel.updateOne({blockNum:f.blockNum},{blockHash:blockHash,blockAuthor:blockAuthor,extrinsicsRoot:extrinsicsRoot,parentHash:parentHash,stateRoot:stateRoot,finalized: true});
@@ -104,14 +106,25 @@ async function processAllAccounts(api,db) {
         });
     }
   });
-  var result =  accountsIds.chunk(20);
-  console.log(result)
-  for(var r of result){
-    console.log(r)
-    r.then( value => { value.map(async (accId: any) =>
+  var result =  accountsIds.chunk(10);
+  console.log(result.array)
+  result.forEach(  element => {
+    console.log("r" +element)
+    element.then( value => { value.map( (accId: any) =>
+       addOrReplaceAccount(api,accId,db,false),
+      console.log("Account històrica afegida"),
+      )});
+   /*element.map(async (accId: any) =>
+      await addOrReplaceAccount(api,accId,db,false),
+      console.log("Account històrica afegida"),
+      )*/
+  });
+  /*for(var r of result){
+    console.log("r" +r)
+    await r.then( value => { value.map(async (accId: any) =>
       await addOrReplaceAccount(api,accId,db,false),
       )});
-  }
+  }*/
   /*result.forEach( a => {
     
     console.log(a);

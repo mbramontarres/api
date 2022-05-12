@@ -89,11 +89,11 @@ export const addTransfer = async (Transfermodel,db,extr,feeInfo, allevents: Even
     
     if (extr.method === 'transferAll' && extr.success) {
         //revisar
-        transfer.amount = JSON.parse(allevents.find(({ event }) =>
+        const eventsfind = await allevents.find(({ event }) =>
             event.section === 'balances' &&
             event.method === 'Transfer',
-        )
-        .event.data[2].toString());
+        );
+        transfer.amount = JSON.parse(eventsfind.event.data[2].toString());
         } else if (extr.method === 'transferAll' && !extr.success) {
         transfer.amount = 0; //Si ha fallat no tenim amount.
         } else if (extr.method === 'forceTransfer') {
