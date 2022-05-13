@@ -1,6 +1,7 @@
 //@ts-check
 
 import { ApiPromise, WsProvider } from "@polkadot/api";
+import { encodeAddress } from '@polkadot/util-crypto';
 import mongoose from "mongoose";
 import { BlockType } from "../src/block/dto/block.dto";
 import { Block, BlockDocument, BlockSchema } from "../src/block/block.schema";
@@ -37,7 +38,7 @@ async function Run(){
       await addBlocksDb(db,api,last.number,true);
     }
 
-    Promise.all([ /*findGaps(db,api,null)*/,  processAllAccounts(api,db),  listenBlocks(api,db)])
+    Promise.all([ /*findGaps(db,api,null)*/,  processAllAccounts(api,db), listenBlocks(api,db)])
     //findGaps(db,api,null);
     //await processAllAccounts(api);
     
@@ -45,7 +46,7 @@ async function Run(){
 }
 
 async function listenBlocks(api,db){
-  const Blockmodel =  db.model('blocks', BlockSchema);
+
   const chain = await api.rpc.system.chain();
   await api.rpc.chain.subscribeNewHeads(async (lastHeader) => {
       console.log(`${chain}: last block #${lastHeader.number} has hash ${lastHeader.hash}`);
@@ -55,83 +56,50 @@ async function listenBlocks(api,db){
      
      //Mirar finalitzats
      const finalizedHash = await api.rpc.chain.getFinalizedHead();
-     const finalizedBlock =  await api.rpc.chain.getBlock(finalizedHash);
-     const tofinalize = await Blockmodel.find({blockNum: {$lte:finalizedBlock.block.header.number.toNumber()},finalized: false});
-     tofinalize.forEach(async f =>{
-      
-      const blockHash = await api.rpc.chain.getBlockHash(f.blockNum);
-      const extendedBlock = await api.derive.chain.getHeader(blockHash);
-    
-      //console.log(extendedBlock);
-      const parentHash = extendedBlock.parentHash;
-      const extrinsicsRoot = extendedBlock.extrinsicsRoot;
-      const blockAuthor =extendedBlock.author.toString();
-      const stateRoot = extendedBlock.stateRoot;
-
-      await Blockmodel.updateOne({blockNum:f.blockNum},{blockHash:blockHash,blockAuthor:blockAuthor,extrinsicsRoot:extrinsicsRoot,parentHash:parentHash,stateRoot:stateRoot,finalized: true});
-     });
+     await processFinalized(api,db,finalizedHash);
+     
      //console.log(finalizedBlock.block.header.number.toNumber());
       //actualitzar propietat finalitzat
      //await Blockmodel.updateMany({blockNum: {$lte:finalizedBlock.block.header.number.toNumber()},finalized: false},{$set:{finalized:true}});
   });
 }
-async function processFinalized(){
+async function processFinalized(api,db,finalizedHash){
+  const Blockmodel =  db.model('blocks', BlockSchema);
+  const finalizedBlock =  await api.rpc.chain.getBlock(finalizedHash);
+  const tofinalize = await Blockmodel.find({blockNum: {$lte:finalizedBlock.block.header.number.toNumber()},finalized: false});
+  tofinalize.forEach(async f =>{
+   
+   const blockHash = await api.rpc.chain.getBlockHash(f.blockNum);
+   const extendedBlock = await api.derive.chain.getHeader(blockHash);
+ 
+   //console.log(extendedBlock);
+   const parentHash = extendedBlock.parentHash;
+   const extrinsicsRoot = extendedBlock.extrinsicsRoot;
+   const blockAuthor =extendedBlock.author.toString();
+   const stateRoot = extendedBlock.stateRoot;
 
+   await Blockmodel.updateOne({blockNum:f.blockNum},{blockHash:blockHash,blockAuthor:blockAuthor,extrinsicsRoot:extrinsicsRoot,parentHash:parentHash,stateRoot:stateRoot,finalized: true});
+   
+  });
+  console.log("Últim Block finalitzat: "+finalizedBlock.block.header.number.toNumber());
 }
 async function processAllAccounts(api,db) {
-  console.log("Thread Accounts Started")
-  const accounts = await api.query.system.account.keys();
-  let accountsIds = accounts.map(({ args }) => args).map(([e]) => e.toHuman());
-  //parallize
-  console.log("Thread Accounts: accounts trobades.")
-  /*let result = []
-  for (let i = 0; i < accountsIds.length; i += 20) {
-    let chunk = accountsIds.slice(i, i + 20)
-    result.push(chunk)
-  }
-  result.forEach( a=> {
-    a.forEach(async account =>{
-      await addOrReplaceAccount(api,account,db,false);
-  })
-  
-  });*/
-  console.log(accounts)
-  Object.defineProperty(Array.prototype, 'chunk', {
-    value: function(chunkSize) {
-        var that = this;
-        //@ts-ignore
-        return Array(Math.ceil(that.length/chunkSize)).fill().map(async function(_,i){
-            return that.slice(i*chunkSize,i*chunkSize+chunkSize);
-            
-        });
-    }
-  });
-  var result =  accountsIds.chunk(10);
-  console.log(result.array)
-  result.forEach(  element => {
-    console.log("r" +element)
-    element.then( value => { value.map( (accId: any) =>
-       addOrReplaceAccount(api,accId,db,false),
-      console.log("Account històrica afegida"),
-      )});
-   /*element.map(async (accId: any) =>
-      await addOrReplaceAccount(api,accId,db,false),
-      console.log("Account històrica afegida"),
-      )*/
-  });
-  /*for(var r of result){
-    console.log("r" +r)
-    await r.then( value => { value.map(async (accId: any) =>
-      await addOrReplaceAccount(api,accId,db,false),
-      )});
-  }*/
-  /*result.forEach( a => {
+
+  let limit = 50;
+  let last_key = "";
+  let query = await api.query.system.account.entriesPaged({ args: [], pageSize: limit, startKey: last_key });
+
+  //console.log(query[limit-1]);
+  while(query!=[]){
+    query.forEach(async account =>{
+      let account_id = encodeAddress(account[0].slice(-32));
+      await addOrReplaceAccount(api,account_id,db,false);
+    });
     
-    console.log(a);
-    a.forEach(async account =>{
-      await 
-  })
-});*/
+    last_key =query[limit-1][0];
+    //console.log(last_key);
+    query = await api.query.system.account.entriesPaged({ args: [], pageSize: limit, startKey: last_key });
+  }
 }
 
 
@@ -256,14 +224,8 @@ async function findGaps(db,api: ApiPromise, lastHeader){
 async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
      //db.model('blocks', mongoose.Schema.)
      const Blockmodel =  db.model('blocks', BlockSchema);
-     const Extmodel = db.model('extrinsics',ExtrinsicSchema);
-     const Transfermodel =  db.model('transfers', TransferSchema);
-     const Eventmodel = db.model('events',EventSchema);
      const Logsmodel = db.model('logs',LogSchema);
-     const extr = new ExtrinsicType;
-     const event = new EventType;
      const block = new BlockType;
-     const log = new LogType;
      
      
 
@@ -277,7 +239,7 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
      //Get BlockApi
      const apiblock  = await api.at(blockHash);
      //get extended header for author.
-     const extendedHeader = await api.derive.chain.getHeader(blockHash);
+     //const extendedHeader = await api.derive.chain.getHeader(blockHash);
      const runtime = await api.rpc.state.getRuntimeVersion(blockHash);
      const timestamp = blockNum !== 0? parseInt(extendedBlock.block.extrinsics.find(({ method: { section, method } }) => section === 'timestamp' && method === 'set',).args[0].toString(),10,) : 0;
 
@@ -297,7 +259,7 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
      
      //Processar contingut block
      const allevents = extendedBlock.events;
-     let extrinsics = await extendedBlock.block.extrinsics;
+     let extrinsics = extendedBlock.block.extrinsics;
      block.extrinsics = [];
      block.events = [];
      //Afegir parametres que falten
@@ -316,3 +278,4 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
 
 
 Run();
+
