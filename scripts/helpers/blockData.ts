@@ -5,7 +5,7 @@ import { ExtrinsicSchema } from "../../src/extrinsic/extrinsic.schema";
 import { EventSchema } from "../../src/event/event.schema";
 import { EventType } from "../../src/event/event.dto";
 import { EventRecord } from '@polkadot/types/interfaces';
-import { LogType } from "../../src/log/log.dto";
+
 
 import { TransferSchema } from "../../src/transfer/transfer.schema";
 import { TransferType } from "../../src/transfer/dto/transfer.dto";
@@ -45,26 +45,6 @@ export const addOrReplaceAccount = async (api: ApiPromise,account: string,db, up
 
 }
 
-export const addLogs = async (Logsmodel,extendedBlock,block,blockNum): Promise<void> =>{
-    
-    const logs = extendedBlock.block.header.digest.logs;
-    block.logs = [];
-    logs.forEach(async (l,index)=> {
-        const log = new LogType;
-        log.blockNum = blockNum;
-        log.logIndex = index;
-        log.logType = l.type;
-        //log.engine = ----
-        //log.data = l.
-
-        const createdLog = new Logsmodel(log);
-        await Logsmodel.updateOne({blockNum: log.blockNum},log,{upsert: true});
-
-        block.logs.push(createdLog);
-
-    });
-
-}
 
 export const addTransfer = async (Transfermodel,db,extr,feeInfo, allevents: EventRecord[]): Promise<void> =>{
     
@@ -113,14 +93,14 @@ export const addTransfer = async (Transfermodel,db,extr,feeInfo, allevents: Even
     await Transfermodel.updateOne({hash: transfer.hash},transfer,{upsert: true});
     //createdTransfer.save();
 }
-export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,blockNum,blockHash,block,timestamp, updateAccount:boolean): Promise<void> =>{
+export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,blockNum,blockHash,block,timestamp, updateAccount:boolean)=>{
     const Transfermodel =  db.model('transfers', TransferSchema);
-
+    const Extmodel = db.model('extrinsics',ExtrinsicSchema);
     const Eventmodel = db.model('events',EventSchema);
-    
     var i = 0;
     try{
-        extrinsics.forEach( (extrinsic,index) => {
+        var index = 0;
+        for (const extrinsic of extrinsics) {
             const extr = new ExtrinsicType;
             extr.section =  extrinsic.method.section;
             extr.blockTimestamp = timestamp;
@@ -142,52 +122,46 @@ export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,
             
             const allaccounts = []
             extr.events = [];
-            
-            events.forEach(e => {
-            const event = new EventType;
-             //Falten parametres
-             event.blockNum = blockNum;
-             event.extrinsicIndex = extr.extrinsicIndex;
-             event.eventIndex = i;
-             event.section = e.event.section;
-             event.method = e.event.method;
-             event.phase = e.phase.toString();
-             event.doc = JSON.stringify(e.event.meta.docs.toJSON());
-             //event.blockTimestamp = timestamp;
-    
-    
-            //look extrinsic success
-            if (api.events.system.ExtrinsicSuccess.is(e.event)) {
-                extr.success = true;
-            } 
-            else{
-                extr.success = false;
-            }
-    
-    
-            //Accounts
-            if(extr.section === 'balances'){
-                const types = e.event.typeDef;
-                e.event.data.forEach((d,i) => {
-                    if ( types[i].type === 'AccountId32'){
-                        if(!allaccounts.includes(d.toString())){
-                            allaccounts.push(d.toString());
+            for(const e of events){
+                const event = new EventType;
+                //Falten parametres
+                event.blockNum = blockNum;
+                event.extrinsicIndex = extr.extrinsicIndex;
+                event.eventIndex = i;
+                event.section = e.event.section;
+                event.method = e.event.method;
+                event.phase = e.phase.toString();
+                event.doc = JSON.stringify(e.event.meta.docs.toJSON());
+                //event.blockTimestamp = timestamp;
+        
+        
+                //look extrinsic success
+                if (api.events.system.ExtrinsicSuccess.is(e.event)) {
+                    extr.success = true;
+                } 
+                else{
+                    extr.success = false;
+                }
+        
+        
+                //Accounts
+                if(extr.section === 'balances'){
+                    const types = e.event.typeDef;
+                    e.event.data.forEach((d,i) => {
+                        if ( types[i].type === 'AccountId32'){
+                            if(!allaccounts.includes(d.toString())){
+                                allaccounts.push(d.toString());
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                
+                i++;
+                const createdEvent = await Eventmodel.updateOne({blockNum: event.blockNum, eventIndex:event.eventIndex},{$setOnInsert:event},{upsert: true});
+
+                block.events.push(createdEvent.upsertedId);
+                extr.events.push(createdEvent.upsertedId);
             }
-    
-            
-    
-             
-             Eventmodel.updateOne({blockNum: event.blockNum,eventIndex: event.eventIndex },event,{upsert: true});
-             //createdEvent.save();
-             i++;
-             //console.log("extrinsic: "+event.extrinsicIndex+ " events:"+ event.eventIndex);
-             const createdEvent = new Eventmodel(event);
-             block.events.push(createdEvent);
-             extr.events.push(createdEvent);
-            });
     
     
             //Add Accounts
@@ -205,22 +179,13 @@ export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,
 
 
             
-            
-           // console.log(extr.extrinsicIndex);
-           //console.log("extrinsic: "+extr.extrinsicIndex+ " blocks:"+ extr.blockNum);
-            //createdExtrinsic.save();
-            //Guardem referencia extrinsic a block
-            //createdExtrinsic.save();
-            //mongoose.set('debug', true);
-            insertExtrinsic(db,extr,block);
-            
-            //mongoose.set('debug', false);
-            //console.log("extrinsic afegit");
-            //const createdExtrinsic;
-            //block.extrinsics.push(extr);
-            //save created
-         });
-         
+            //console.log(extr);
+            const createdExtrinsic = await Extmodel.updateOne({blockNum: extr.blockNum,extrinsicIndex:extr.extrinsicIndex},{$setOnInsert:extr},{upsert: true});
+            //console.log(createdExtrinsic);
+            block.extrinsics.push(createdExtrinsic .upsertedId);
+            index++;
+        }
+
     }
     catch(e){
         console.log("hola");
@@ -228,9 +193,3 @@ export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,
     
 }
 
-async function insertExtrinsic(db,extr,block) {
-    const Extmodel = db.model('extrinsics',ExtrinsicSchema);
-    const extrinsic = await Extmodel.updateOne({extrinsicHash: extr.extrinsicHash},extr,{upsert: true});
-    block.extrinsics.push(extrinsic.upsertedId);
-    //console.log(extrinsic);
-}

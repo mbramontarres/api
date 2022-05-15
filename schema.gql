@@ -35,14 +35,6 @@ type ExtrinsicType {
   finalized: Boolean!
 }
 
-type LogType {
-  logIndex: Int!
-  blockNum: Int!
-  logType: String!
-  originType: String!
-  data: String!
-}
-
 type BlockType {
   blockNum: Int!
   blockTimestamp: Float!
@@ -52,7 +44,6 @@ type BlockType {
   extrinsicsRoot: String!
   extrinsics: [ExtrinsicType!]!
   events: [EventType!]!
-  logs: [LogType!]!
   eventCount: Int!
   extrinsicsCount: Int!
   specVersion: Int!
@@ -119,14 +110,6 @@ input ExtrinsicInputType {
   finalized: Boolean!
 }
 
-input LogInputType {
-  logIndex: Int!
-  blockNum: Int!
-  logType: String!
-  originType: String!
-  data: String!
-}
-
 input BlockInputType {
   blockNum: Int!
   blockTimestamp: Float!
@@ -136,7 +119,6 @@ input BlockInputType {
   extrinsicsRoot: String!
   extrinsics: [ExtrinsicInputType!]!
   events: [EventInputType!]!
-  logs: [LogInputType!]!
   eventCount: Int!
   extrinsicsCount: Int!
   specVersion: Int!
@@ -175,7 +157,6 @@ type Query {
   block(blockNum: Float!): BlockType
   extrinsics: [ExtrinsicType!]!
   events: [EventType!]!
-  logs: [LogType!]!
   transfers(skip: Int = 0, take: Int = 25): [TransferType!]!
   accountTransfers(accountId: String!, skip: Int = 0, take: Int = 25): [TransferType!]!
   transfer(hash: String!): TransferType!
@@ -193,7 +174,4 @@ type Mutation {
   createEvent(input: EventInputType!): EventType!
   updateEvent(id: String!, input: EventInputType!): EventType!
   deleteEvent(id: String!): EventType!
-  createLog(input: LogInputType!): LogType!
-  updateLog(id: String!, input: LogInputType!): LogType!
-  deleteLog(id: String!): LogType!
 }

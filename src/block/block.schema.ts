@@ -6,9 +6,8 @@ import * as mongoose from 'mongoose';
 
 import { Extrinsic } from '../extrinsic/extrinsic.schema';
 import { Event } from '../event/event.schema';
-import { Log } from '../log/log.schema';
 import { ExtrinsicType } from '../extrinsic/extrinsic.dto';
-import { LogType } from '../log/log.dto';
+
 import { EventType } from '../event/event.dto';
 
 @Schema()
@@ -47,9 +46,6 @@ export class Block {
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }] })
     events: Event[];
 
-    @Field(() => [LogType])
-    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Log' }] })
-    logs: Log[];
 
     @Field(()=> Int)
     @Prop()

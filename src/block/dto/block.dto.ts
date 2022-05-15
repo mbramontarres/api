@@ -1,12 +1,11 @@
 import { ObjectType, Field, InputType, Int } from "@nestjs/graphql";
 import { type } from 'os';
 import { Extrinsic } from "src/extrinsic/extrinsic.schema";
-import { Log } from "src/log/log.schema";
 import { Event } from "src/event/event.schema";
 import mongoose from "mongoose";
 import { ExtrinsicType } from "../../extrinsic/extrinsic.dto";
 import { EventType } from "../../event/event.dto";
-import { LogType } from "../../log/log.dto";
+
 
 
 @ObjectType('BlockType')
@@ -36,9 +35,6 @@ export class BlockType {
 
     @Field(() => [EventType])
     events: EventType[];
-
-    @Field(() => [LogType])
-    logs: LogType[];
 
     @Field(() => Int)
     eventCount: number;

@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { BlockService } from './block.service';
 import { BlockArgs } from './dto/block.args';
 import { BlockType } from './dto/block.dto';
@@ -7,6 +7,7 @@ import { BlockType } from './dto/block.dto';
 export class BlockResolver {
     constructor(private readonly blockService: BlockService) {}
 
+    //@Subscription(returns => [BlockType])
     @Query(returns => [BlockType])
     async blocks(@Args() blocksArgs: BlockArgs) {
         return this.blockService.findAll(blocksArgs);

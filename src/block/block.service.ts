@@ -23,8 +23,7 @@ export class BlockService {
         //const { limit, offset } = blockArgs;
         return this.blockModel.findOne({blockNum: num})
                     .populate('extrinsics')
-                    .populate('events')
-                    .populate('logs').exec();
+                    .populate('events').exec();
     }
 
     /*public async findGaps(): Promise<Number[]>

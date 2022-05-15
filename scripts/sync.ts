@@ -9,14 +9,13 @@ import { ExtrinsicType } from "../src/extrinsic/extrinsic.dto";
 import { ExtrinsicSchema } from "../src/extrinsic/extrinsic.schema";
 import { EventSchema } from "../src/event/event.schema";
 import { EventType } from "../src/event/event.dto";
-import { LogSchema } from "../src/log/log.schema";
-import { LogType } from "../src/log/log.dto";
 import config from "../config/config";
 import { TransferSchema } from "../src/transfer/transfer.schema";
 import { TransferType } from "../src/transfer/dto/transfer.dto";
 import { AccountSchema } from "../src/account/account.schema";
 import { AccountType } from "../src/account/dto/account.dto";
-import { addLogs, addOrReplaceAccount, getAccountProperies, processBlockData } from "./helpers/blockData";
+import { addOrReplaceAccount, getAccountProperies, processBlockData } from "./helpers/blockData";
+import { doesNotReject } from "assert";
 
 async function Run(){
     const wsProvider = new WsProvider(config.wsProviderUrl);
@@ -33,12 +32,12 @@ async function Run(){
     //Almenys un block a la col·lecció
     const buit = await db.model('blocks', BlockSchema).find()
     if(buit.length==0){
-      console.log("primer block");
+      console.log("Primer block");
       const last = await api.rpc.chain.getHeader();
       await addBlocksDb(db,api,last.number,true);
     }
 
-    Promise.all([ /*findGaps(db,api,null)*/,  processAllAccounts(api,db), listenBlocks(api,db)])
+    Promise.all([ findGaps(db,api,null),  processAllAccounts(api,db), listenBlocks(api,db)])
     //findGaps(db,api,null);
     //await processAllAccounts(api);
     
@@ -67,20 +66,18 @@ async function processFinalized(api,db,finalizedHash){
   const Blockmodel =  db.model('blocks', BlockSchema);
   const finalizedBlock =  await api.rpc.chain.getBlock(finalizedHash);
   const tofinalize = await Blockmodel.find({blockNum: {$lte:finalizedBlock.block.header.number.toNumber()},finalized: false});
-  tofinalize.forEach(async f =>{
-   
-   const blockHash = await api.rpc.chain.getBlockHash(f.blockNum);
-   const extendedBlock = await api.derive.chain.getHeader(blockHash);
+  for(const f of tofinalize){
+    const blockHash = await api.rpc.chain.getBlockHash(f.blockNum);
+    const extendedBlock = await api.derive.chain.getHeader(blockHash);
+    //console.log(extendedBlock);
+    const parentHash = extendedBlock.parentHash;
+    const extrinsicsRoot = extendedBlock.extrinsicsRoot;
+    const blockAuthor = f.blockNum==0? '':extendedBlock.author.toString();
+    const stateRoot = extendedBlock.stateRoot;
  
-   //console.log(extendedBlock);
-   const parentHash = extendedBlock.parentHash;
-   const extrinsicsRoot = extendedBlock.extrinsicsRoot;
-   const blockAuthor =extendedBlock.author.toString();
-   const stateRoot = extendedBlock.stateRoot;
-
-   await Blockmodel.updateOne({blockNum:f.blockNum},{blockHash:blockHash,blockAuthor:blockAuthor,extrinsicsRoot:extrinsicsRoot,parentHash:parentHash,stateRoot:stateRoot,finalized: true});
-   
-  });
+    await Blockmodel.updateOne({blockNum:f.blockNum},{blockHash:blockHash,blockAuthor:blockAuthor,extrinsicsRoot:extrinsicsRoot,parentHash:parentHash,stateRoot:stateRoot,finalized: true});
+    
+  }
   console.log("Últim Block finalitzat: "+finalizedBlock.block.header.number.toNumber());
 }
 async function processAllAccounts(api,db) {
@@ -90,16 +87,15 @@ async function processAllAccounts(api,db) {
   let query = await api.query.system.account.entriesPaged({ args: [], pageSize: limit, startKey: last_key });
 
   //console.log(query[limit-1]);
-  while(query!=[]){
-    query.forEach(async account =>{
+  while(query.length == 0){
+    for(const account of query){
       let account_id = encodeAddress(account[0].slice(-32));
       await addOrReplaceAccount(api,account_id,db,false);
-    });
-    
-    last_key =query[limit-1][0];
-    //console.log(last_key);
+      last_key = account[0];
+    }
     query = await api.query.system.account.entriesPaged({ args: [], pageSize: limit, startKey: last_key });
   }
+  console.log("Accounts afegides");
 }
 
 
@@ -224,12 +220,9 @@ async function findGaps(db,api: ApiPromise, lastHeader){
 async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
      //db.model('blocks', mongoose.Schema.)
      const Blockmodel =  db.model('blocks', BlockSchema);
-     const Logsmodel = db.model('logs',LogSchema);
      const block = new BlockType;
      
-     
-
-    //parelitzar.....
+      //parelitzar.....
      //Get Block Hash
      const blockHash = await api.rpc.chain.getBlockHash(blockNum);
      //Get block
@@ -262,17 +255,19 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
      let extrinsics = extendedBlock.block.extrinsics;
      block.extrinsics = [];
      block.events = [];
-     //Afegir parametres que falten
+     //Afsegir parametres que falten
     await processBlockData(api,db,extrinsics,allevents,blockNum,blockHash,block,timestamp,updateAccount);    
 
-    await addLogs(Logsmodel,extendedBlock,block,blockNum);
 
-     const createdBlock = new Blockmodel(block);
+     /*const createdBlock = new Blockmodel(block);
+     createdBlock.save();*/
      //block.extrinsics.map(e => console.log("fora:" +e.method));
-     await Blockmodel.updateOne({blockNum: block.blockNum},block,{upsert: true});
+     await Blockmodel.updateOne({blockNum: block.blockNum},{$setOnInsert:block},{upsert: true});
      
      console.log("Block: " + blockNum + " added")
      //createdBlock.save();
+
+    
 }
 
 
