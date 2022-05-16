@@ -34,7 +34,7 @@ async function Run(){
     }
 
     //Async main functionalities.
-    Promise.all([ /*findGaps(db,api,null)*/,  processAllAccounts(api,db), listenBlocks(api,db)])
+    Promise.all([ findGaps(db,api),  processAllAccounts(api,db), listenBlocks(api,db)])
     
 
 }
@@ -57,7 +57,6 @@ async function processFinalized(api:ApiPromise,db,finalizedHash:BlockHash){
   const finalizedBlock =  await api.rpc.chain.getBlock(finalizedHash);
   const tofinalize = await Blockmodel.find({blockNum: {$lte:finalizedBlock.block.header.number.toNumber()},finalized: false});
   for(const f of tofinalize){
-    
     const blockHash = await api.rpc.chain.getBlockHash(f.blockNum);
     const extendedBlock = await api.derive.chain.getHeader(blockHash);
     //console.log(extendedBlock);
