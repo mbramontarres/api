@@ -1,4 +1,4 @@
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Query, Resolver } from '@nestjs/graphql';
 import { AccountService } from './account.service';
 import { AccountArgs } from './dto/account.args';
 import { AccountType } from './dto/account.dto';
@@ -15,5 +15,10 @@ export class AccountResolver {
     @Query(returns => AccountType)
     async account(@Args('accountId') accountId: String) {
         return this.accountService.findOne(accountId);
+    }
+
+    @Query(returns => Int)
+    async accountsCount() {
+        return this.accountService.count();
     }
 }

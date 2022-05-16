@@ -1,4 +1,4 @@
-import { Args, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Query, Resolver } from '@nestjs/graphql';
 import { TransferArgs } from './dto/transfer.args';
 import { TransferType } from './dto/transfer.dto';
 import { TransferService } from './transfer.service';
@@ -20,6 +20,11 @@ export class TransferResolver {
     @Query(returns => TransferType)
     async transfer(@Args('hash') hash: String) {
         return this.transferService.findOne(hash);
+    }
+
+    @Query(returns => Int)
+    async transfersCount() {
+        return this.transferService.count();
     }
 
 }

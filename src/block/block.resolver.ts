@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { BlockService } from './block.service';
 import { BlockArgs } from './dto/block.args';
 import { BlockType } from './dto/block.dto';
@@ -17,23 +17,9 @@ export class BlockResolver {
     async block(@Args('blockNum') blockNum: Number) {
         return this.blockService.findOne(blockNum);
     }
-    /*@Query(returns => [Number])
-    async blockGaps() {
-        return this.blockService.findGaps();
-    }*/
-
-    @Mutation(returns => BlockType)
-    async createBlock(@Args('input') input: BlockType) {
-        return this.blockService.create(input);
+    @Query(returns => Int)
+    async blocksCount() {
+        return this.blockService.count();
     }
 
-    @Mutation(returns => BlockType)
-    async updateBlock(@Args('id') id: string, @Args('input') input: BlockType) {
-        return this.blockService.update(id, input);
-    }
-
-    @Mutation(returns => BlockType)
-    async deleteBlock(@Args('id') id: string) {
-    return this.blockService.delete(id);
-    }
 }

@@ -26,27 +26,11 @@ export class BlockService {
                     .populate('events').exec();
     }
 
-    /*public async findGaps(): Promise<Number[]>
+
+    public async count(): Promise<Number> 
     {
-        return this.blockModel.aggregate([
-            {$group : {_id : null, min : {$min : "$blockNum"}, max : {$max : "$blockNum"}}},
-            {$addFields : {rangeNums : {$range : ["$min", "$max"]}}},
-            {$lookup : {from : "blocks", localField : "rangeIds", foreignField : "blockNum", as : "blocks"}},
-            {$project : {_id :0, missingIds : {$setDifference : ["$rangeIds", "$blocks.blockNum"]}}}
-        ]);
-    }*/
-
-    async create(createBlockDto: BlockType): Promise<Block> {
-        const createdBlock = new this.blockModel(createBlockDto);
-        return createdBlock.save();
-    }
-
-    async update(id: string, updateBlockDto: BlockType): Promise<Block> {
-        return this.blockModel.findByIdAndUpdate(id, updateBlockDto);
-    }
-    
-    async delete(id: string): Promise<Block> {
-        return this.blockModel.findByIdAndDelete(id);
+        //const { limit, offset } = blockArgs;
+        return this.blockModel.count().exec();
     }
 
 }

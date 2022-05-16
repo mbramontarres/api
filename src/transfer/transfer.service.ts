@@ -26,4 +26,10 @@ export class TransferService {
         return this.transferModel.findOne({hash: hash})
                     .populate('events').exec();
     }
+
+    public async count(): Promise<Number> 
+    {
+        //const { limit, offset } = blockArgs;
+        return this.transferModel.count().exec();
+    }
 }

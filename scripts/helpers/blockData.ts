@@ -4,7 +4,7 @@ import { ExtrinsicType } from "../../src/extrinsic/extrinsic.dto";
 import { ExtrinsicSchema } from "../../src/extrinsic/extrinsic.schema";
 import { EventSchema } from "../../src/event/event.schema";
 import { EventType } from "../../src/event/event.dto";
-import { EventRecord } from '@polkadot/types/interfaces';
+import { EventRecord, BlockHash } from '@polkadot/types/interfaces';
 
 
 import { TransferSchema } from "../../src/transfer/transfer.schema";
@@ -46,7 +46,7 @@ export const addOrReplaceAccount = async (api: ApiPromise,account: string,db, up
 }
 
 
-export const addTransfer = async (Transfermodel,db,extr,feeInfo, allevents: EventRecord[]): Promise<void> =>{
+export const addTransfer = async (Transfermodel,extr,feeInfo, allevents: EventRecord[]): Promise<void> =>{
     
     const transfer = new TransferType;
 
@@ -61,9 +61,9 @@ export const addTransfer = async (Transfermodel,db,extr,feeInfo, allevents: Even
     //const args = extrinsic.method.args;
     if (JSON.parse(extr.params)[0].id) {
         transfer.destination = JSON.parse(extr.params)[0].id;
-        } else if (JSON.parse(extr.params)[0].address20) {
+    } else if (JSON.parse(extr.params)[0].address20) {
         transfer.destination = JSON.parse(extr.params)[0].address20;
-        } else {
+    } else {
         transfer.destination = JSON.parse(extr.params)[0];
     }
     
@@ -74,24 +74,23 @@ export const addTransfer = async (Transfermodel,db,extr,feeInfo, allevents: Even
             event.method === 'Transfer',
         );
         transfer.amount = JSON.parse(eventsfind.event.data[2].toString());
-        } else if (extr.method === 'transferAll' && !extr.success) {
+    } 
+    else if (extr.method === 'transferAll' && !extr.success) {
         transfer.amount = 0; //Si ha fallat no tenim amount.
-        } else if (extr.method === 'forceTransfer') {
+    } 
+    else if (extr.method === 'forceTransfer') {
         transfer.amount = JSON.parse(extr.params)[2];
-        } else {
+    } 
+    else {
         transfer.amount = JSON.parse(extr.params)[1]; 
-        }
+    }
 
         //si no està signat no tenim fee
         let info = await feeInfo;
-        //console.log(info.toJSON().partialFee)  
-            transfer.fee = !! await feeInfo
-            ? info.toJSON().partialFee
-            : 0;
+        transfer.fee = !! await feeInfo? info.toJSON().partialFee: 0;
         
-    //const createdTransfer = new Transfermodel(transfer);
     await Transfermodel.updateOne({hash: transfer.hash},transfer,{upsert: true});
-    //createdTransfer.save();
+
 }
 export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,blockNum,blockHash,block,timestamp, updateAccount:boolean)=>{
     const Transfermodel =  db.model('transfers', TransferSchema);
@@ -167,28 +166,23 @@ export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,
             //Add Accounts
             Promise.all(allaccounts.map((acc) =>addOrReplaceAccount(api,acc,db,updateAccount)));
             //Afegir transferència si ho és
-            if (extr.section === 'balances' && 
-                (extr.method === 'forceTransfer' ||
+            if (extr.section === 'balances' && (extr.method === 'forceTransfer' ||
                 extr.method === 'transfer' ||
                 extr.method === 'transferAll' ||
                 extr.method === 'transferKeepAlive')) 
             {
                 //Add Transfer
-                addTransfer(Transfermodel,db,extr,feeInfo,allevents)
+                addTransfer(Transfermodel,extr,feeInfo,allevents)
             }
-
-
-            
-            //console.log(extr);
+            //Add Extrinsic
             const createdExtrinsic = await Extmodel.updateOne({blockNum: extr.blockNum,extrinsicIndex:extr.extrinsicIndex},{$setOnInsert:extr},{upsert: true});
-            //console.log(createdExtrinsic);
             block.extrinsics.push(createdExtrinsic .upsertedId);
             index++;
         }
 
     }
     catch(e){
-        console.log("hola");
+        console.log("Alguna cosa ha fallat al processar les dades d'un block.");
     }
     
 }

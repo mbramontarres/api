@@ -155,19 +155,19 @@ input AccountInputType {
 type Query {
   blocks(skip: Int = 0, take: Int = 25): [BlockType!]!
   block(blockNum: Float!): BlockType
+  blocksCount: Int!
   extrinsics: [ExtrinsicType!]!
   events: [EventType!]!
   transfers(skip: Int = 0, take: Int = 25): [TransferType!]!
   accountTransfers(accountId: String!, skip: Int = 0, take: Int = 25): [TransferType!]!
   transfer(hash: String!): TransferType!
+  transfersCount: Int!
   accounts(skip: Int = 0, take: Int = 25): [AccountType!]!
   account(accountId: String!): AccountType!
+  accountsCount: Int!
 }
 
 type Mutation {
-  createBlock(input: BlockInputType!): BlockType!
-  updateBlock(id: String!, input: BlockInputType!): BlockType!
-  deleteBlock(id: String!): BlockType!
   createExtrinsic(input: ExtrinsicInputType!): ExtrinsicType!
   updateExtrinsic(id: String!, input: ExtrinsicInputType!): ExtrinsicType!
   deleteExtrinsic(id: String!): ExtrinsicType!
