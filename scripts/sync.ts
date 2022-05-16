@@ -39,7 +39,7 @@ async function Run(){
 
 }
 
-async function listenBlocks(api:ApiPromise,db: typeof mongoose){
+async function listenBlocks(api:ApiPromise,db){
 
   const chain = await api.rpc.system.chain();
   await api.rpc.chain.subscribeNewHeads(async (lastHeader) => {
