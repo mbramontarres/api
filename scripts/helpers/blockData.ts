@@ -1,9 +1,9 @@
 import { ApiPromise } from "@polkadot/api";
 import mongoose from "mongoose";
-import { ExtrinsicType } from "../../src/extrinsic/extrinsic.dto";
+import { ExtrinsicType } from "../../src/extrinsic/dto/extrinsic.dto";
 import { ExtrinsicSchema } from "../../src/extrinsic/extrinsic.schema";
 import { EventSchema } from "../../src/event/event.schema";
-import { EventType } from "../../src/event/event.dto";
+import { EventType } from "../../src/event/dto/event.dto";
 import { EventRecord, BlockHash } from '@polkadot/types/interfaces';
 
 

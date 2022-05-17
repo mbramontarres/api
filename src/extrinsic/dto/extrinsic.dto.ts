@@ -1,6 +1,6 @@
 import { ObjectType, Field, InputType, Int } from "@nestjs/graphql";
 import mongoose from "mongoose";
-import { EventType } from "../event/event.dto";
+import { EventType } from "../../event/dto/event.dto";
 
 
 import { Event } from 'src/event/event.schema';

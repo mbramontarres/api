@@ -1,28 +1,24 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { EventService } from './event.service';
-import { EventType } from './event.dto';
+import { EventType } from './dto/event.dto';
+import { EventArgs } from './dto/event.args';
 
 @Resolver()
 export class EventResolver {
     constructor(private readonly eventService: EventService) {}
 
     @Query(returns => [EventType])
-    async events() {
-        return this.eventService.findAll();
+    async events(@Args() eventArgs: EventArgs) {
+        return this.eventService.findAll(eventArgs);
     }
 
-    @Mutation(returns => EventType)
-    async createEvent(@Args('input') input: EventType) {
-        return this.eventService.create(input);
+    @Query(returns => EventType, { nullable: true })
+    async event(@Args('blockNum') blockNum: Number,@Args('eventIndex') eventIndex: Number) {
+        return this.eventService.findOne(blockNum,eventIndex);
     }
 
-    @Mutation(returns => EventType)
-    async updateEvent(@Args('id') id: string, @Args('input') input: EventType) {
-        return this.eventService.update(id, input);
-    }
-
-    @Mutation(returns => EventType)
-    async deleteEvent(@Args('id') id: string) {
-        return this.eventService.delete(id);
+    @Query(returns => Int)
+    async eventsCount() {
+        return this.eventService.count();
     }
 }

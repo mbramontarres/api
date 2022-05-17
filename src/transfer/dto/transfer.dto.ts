@@ -1,5 +1,5 @@
 import { Field, InputType, Int, ObjectType } from "@nestjs/graphql";
-import { EventType } from "../../event/event.dto";
+import { EventType } from "../../event/dto/event.dto";
 
 @ObjectType('TransferType')
 @InputType('TransferInputType')

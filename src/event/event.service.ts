@@ -2,26 +2,27 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Event, EventDocument } from './event.schema';
-import { EventType } from './event.dto';
+import { EventType } from './dto/event.dto';
+import { EventArgs } from './dto/event.args';
 
 @Injectable()
 export class EventService {
     constructor(@InjectModel(Event.name) private eventModel: Model<EventDocument>) {}
 
-    async findAll(): Promise<Event[]> {
-        return this.eventModel.find().exec();
+    public async findAll(eventArgs: EventArgs): Promise<Event[]> 
+    {
+        return this.eventModel.find().sort({blockNum: -1}).skip(eventArgs.skip).limit(eventArgs.take).exec();
     }
 
-    async create(createEventDto: EventType): Promise<Event> {
-        const createdEvent = new this.eventModel(createEventDto);
-        return createdEvent.save();
+    public async findOne(blockNum: Number,index:Number): Promise<Event> 
+    {
+        //const { limit, offset } = blockArgs;
+        return this.eventModel.findOne({blockNum: blockNum,eventIndex: index}).exec();
     }
 
-    async update(id: string, updateEventDto: EventType): Promise<Event> {
-        return this.eventModel.findByIdAndUpdate(id, updateEventDto);
-    }
-    
-    async delete(id: string): Promise<Event> {
-        return this.eventModel.findByIdAndDelete(id);
+    public async count(): Promise<Number> 
+    {
+        //const { limit, offset } = blockArgs;
+        return this.eventModel.count().exec();
     }
 }

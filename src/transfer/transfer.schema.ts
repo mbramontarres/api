@@ -5,7 +5,7 @@ import { type } from 'os';
 import * as mongoose from 'mongoose';
 
 import { Event } from '../event/event.schema';
-import { EventType } from '../event/event.dto';
+import { EventType } from '../event/dto/event.dto';
 
 
 @Schema()

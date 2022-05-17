@@ -6,9 +6,9 @@ import * as mongoose from 'mongoose';
 
 import { Extrinsic } from '../extrinsic/extrinsic.schema';
 import { Event } from '../event/event.schema';
-import { ExtrinsicType } from '../extrinsic/extrinsic.dto';
+import { ExtrinsicType } from '../extrinsic/dto/extrinsic.dto';
 
-import { EventType } from '../event/event.dto';
+import { EventType } from '../event/dto/event.dto';
 
 @Schema()
 @ObjectType()

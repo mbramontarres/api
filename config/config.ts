@@ -1,8 +1,8 @@
 const config = {
     substrateNetwork: 'polkadot',
-    wsProviderUrl: 'ws://0.0.0.0:9944',
+    wsProviderUrl: 'wss://rpc.polkadot.io'/*'ws://0.0.0.0:9944'*/,
 
-    mongoDBConstring: 'mongodb://localhost/explorerdb'
+    mongoDBConstring: 'mongodb://localhost:62160/explorerdb'
 };
 
 export default config;

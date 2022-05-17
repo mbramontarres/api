@@ -3,8 +3,8 @@ import { type } from 'os';
 import { Extrinsic } from "src/extrinsic/extrinsic.schema";
 import { Event } from "src/event/event.schema";
 import mongoose from "mongoose";
-import { ExtrinsicType } from "../../extrinsic/extrinsic.dto";
-import { EventType } from "../../event/event.dto";
+import { ExtrinsicType } from "../../extrinsic/dto/extrinsic.dto";
+import { EventType } from "../../event/dto/event.dto";
 
 
 
