@@ -66,6 +66,16 @@ type TransferType {
   events: [EventType!]!
 }
 
+type transferHistory {
+  total: Int!
+  _id: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type AccountType {
   accountId: String!
   nonce: Float!
@@ -166,6 +176,7 @@ type Query {
   accountTransfers(accountId: String!, skip: Int = 0, take: Int = 25): [TransferType!]!
   transfer(hash: String!): TransferType!
   transfersCount: Int!
+  transferHistory: [transferHistory!]!
   accounts(skip: Int = 0, take: Int = 25): [AccountType!]!
   account(accountId: String!): AccountType!
   accountsCount: Int!

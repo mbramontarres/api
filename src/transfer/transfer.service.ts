@@ -32,4 +32,18 @@ export class TransferService {
         //const { limit, offset } = blockArgs;
         return this.transferModel.count().exec();
     }
+
+    public async transferHistory(): Promise<any[]> 
+    {
+        //const { limit, offset } = blockArgs;
+        return this.transferModel.aggregate([
+            {
+                $group:{
+                    _id:"$blockTimestamp",
+                    total: {$sum: 1}
+                }
+            }
+        ])
+        .exec();
+    }
 }
