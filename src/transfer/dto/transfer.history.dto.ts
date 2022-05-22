@@ -7,7 +7,7 @@ export class transferHistory {
     @Field(() => Int)
     total: number;
 
-    @Field(() => Date)
-    _id: Date;
+    @Field(() => String)
+    _id: string;
 
 }

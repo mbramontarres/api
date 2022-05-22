@@ -39,7 +39,7 @@ export class TransferService {
         return this.transferModel.aggregate([
             {
                 $group:{
-                    _id:"$blockTimestamp",
+                    _id:{ $dateToString: { format: "%Y-%m-%d", date: {$toDate:"$blockTimestamp"}} },
                     total: {$sum: 1}
                 }
             }

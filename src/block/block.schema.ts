@@ -15,7 +15,7 @@ import { EventType } from '../event/dto/event.dto';
 export class Block {
 
     @Field(()=> Int)
-    @Prop()
+    @Prop({index: true})
     blockNum: number;
 
     @Field(()=> Number)
