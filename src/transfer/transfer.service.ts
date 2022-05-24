@@ -41,8 +41,15 @@ export class TransferService {
                 $group:{
                     _id:{ $dateToString: { format: "%Y-%m-%d", date: {$toDate:"$blockTimestamp"}} },
                     total: {$sum: 1}
+                },
+                
+            },
+            {
+                $sort:{
+                    _id: 1
                 }
             }
+            
         ])
         .exec();
     }
