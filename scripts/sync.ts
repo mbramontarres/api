@@ -7,6 +7,7 @@ import { BlockType } from "../src/block/dto/block.dto";
 import { BlockSchema } from "../src/block/block.schema";
 import config from "../config/config";
 import { BlockHash,BlockNumber } from '@polkadot/types/interfaces';
+import {searchGaps} from "./helpers/searchGaps"
 
 import { addOrReplaceAccount, processBlockData } from "./helpers/blockData";
 
@@ -34,12 +35,13 @@ async function Run(){
     }
 
     //Async main functionalities.
-    Promise.all([ findGaps(db,api),  processAllAccounts(api,db), listenBlocks(api,db)])
+    Promise.all([ findGaps(db,api),  processAllAccounts(db,api), listenBlocks(db,api)])
     
 
 }
 
-async function listenBlocks(api:ApiPromise,db){
+async function listenBlocks(db,api:ApiPromise){
+
 
   const chain = await api.rpc.system.chain();
   await api.rpc.chain.subscribeNewHeads(async (lastHeader) => {
@@ -59,19 +61,19 @@ async function processFinalized(api:ApiPromise,db,finalizedHash:BlockHash){
   for(const f of tofinalize){
     const blockHash = await api.rpc.chain.getBlockHash(f.blockNum);
     const extendedBlock = await api.derive.chain.getHeader(blockHash);
-    //console.log(extendedBlock);
+    
     const parentHash = extendedBlock.parentHash;
     const extrinsicsRoot = extendedBlock.extrinsicsRoot;
     const blockAuthor = f.blockNum==0? '':extendedBlock.author.toString();
     const stateRoot = extendedBlock.stateRoot;
- 
-    await Blockmodel.updateOne({blockNum:f.blockNum},{blockHash:blockHash,blockAuthor:blockAuthor,extrinsicsRoot:extrinsicsRoot,parentHash:parentHash,stateRoot:stateRoot,finalized: true});
-    
+
+    await Blockmodel.updateOne({blockNum:f.blockNum},{blockHash:blockHash,blockAuthor:blockAuthor,extrinsicsRoot:extrinsicsRoot.toHex(),parentHash:parentHash.toHex(),stateRoot:stateRoot.toHex(),finalized: true});
   }
   console.log("Últim Block finalitzat: "+finalizedBlock.block.header.number.toNumber());
 }
-async function processAllAccounts(api,db) {
+async function processAllAccounts(db,api) {
 
+ 
   let limit = 50;
   let last_key = "";
   let query = await api.query.system.account.entriesPaged({ args: [], pageSize: limit, startKey: last_key });
@@ -89,45 +91,24 @@ async function processAllAccounts(api,db) {
 
 
 
-async function findGaps(db: typeof mongoose,api: ApiPromise){
+async function findGaps(db,api: ApiPromise){
+
+  
   console.log("Gaps Thread Started")
-    const gaps =  await db.model('blocks', BlockSchema).aggregate([
-        {$unset: ["_id","_v","blockTimestamp","blockHash","parentHash","stateRoot","extrinsicsRoot","extrinsics","events","logs","eventCount","extrinsicsCount","specVersion","blockAuthor","finalized"]},
-        {
-          "$unionWith": {"coll": "blocks","pipeline": [
-              {$unset: ["_id","_v","blockTimestamp","blockHash","parentHash","stateRoot","extrinsicsRoot","extrinsics","events","logs","eventCount","extrinsicsCount","specVersion","blockAuthor","finalized"]},
-              {$group: {_id: null,blockNum: {$min: -1}}},
-              {$unset: ["_id"]}]
-            }
-        },
-        {$lookup: {from: "blocks",let: {blockNum: "$blockNum"},pipeline: [
-              {$match: {$expr: {$gt: ["$blockNum","$$blockNum"]}}},
-              {$group: {_id: null,seguent: {$min: "$blockNum"}}}],
-            as: "posteriors"
-          }
-        },
-        {
-          $unwind: "$posteriors"
-        },
-        {$set: {"left": {$sum: ["$blockNum",1]},"right": {$sum: ["$posteriors.seguent",-1]}}},
-        {
-          $unset: ["_id","__v","blockNum","posteriors"]
-        },
-        {
-          $match: {$expr: {$gte: ["$right","$left"]}}
-        },
-        {$sort: {left: 1}}
-      ])
-      
+
+    const lastHeader =  await api.rpc.chain.getHeader();
+    console.log(lastHeader.number.toNumber());
+    const gaps = await searchGaps(lastHeader.number.toNumber(),db,BlockSchema);
     console.log(gaps);
-    gaps.forEach(async gap => {
-      let block = gap.left;
-        while(block<=gap.right){
-          await addBlocksDb(db,api,block,false);
-          block++;
-        }
-        console.log("Gaps Thread Started:Gap afegit")
-    });
+    for(const gap of gaps){
+      let block = gap.l;
+      while(block<=gap.r){
+        await addBlocksDb(db,api,block,false);
+        block++;
+      }
+      console.log("Gaps Thread Started:Gap afegit")
+    }
+
 }
 
 async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
