@@ -105,7 +105,7 @@ export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,
             extr.blockTimestamp = timestamp;
             extr.method = extrinsic.method.method;
             extr.blockNum = blockNum;
-            extr.signer = extrinsic.isSigned? extrinsic.signer.toString() : '';
+            extr.doc = JSON.stringify(extrinsic.meta.docs.toJSON());
             extr.extrinsicHash = extrinsic.hash.toHex();
             extr.extrinsicIndex = index;
             extr.params = JSON.stringify(extrinsic.method.args);
@@ -132,7 +132,7 @@ export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,
                 event.phase = e.phase.toString();
                 event.doc = JSON.stringify(e.event.meta.docs.toJSON());
                 //event.blockTimestamp = timestamp;
-        
+                event.data = JSON.stringify(e.event.data);
         
                 //look extrinsic success
                 if (api.events.system.ExtrinsicSuccess.is(e.event)) {

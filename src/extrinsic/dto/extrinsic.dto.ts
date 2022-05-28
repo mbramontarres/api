@@ -24,18 +24,6 @@ export class ExtrinsicType {
     method: string;
 
     @Field()
-    accountId: string;
-
-    @Field()
-    signature: string;
-
-    @Field()
-    signer: string;
-
-    @Field()
-    nonce: string;
-
-    @Field()
     extrinsicHash: string;
 
     @Field()
@@ -48,7 +36,7 @@ export class ExtrinsicType {
     params: string;
 
     @Field()
-    fee: number;
+    doc: string;
 
     @Field()
     finalized: boolean;

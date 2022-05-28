@@ -7,7 +7,6 @@ import { BlockType } from './dto/block.dto';
 export class BlockResolver {
     constructor(private readonly blockService: BlockService) {}
 
-    //@Subscription(returns => [BlockType])
     @Query(returns => [BlockType])
     async blocks(@Args() blocksArgs: BlockArgs) {
         return this.blockService.findAll(blocksArgs);

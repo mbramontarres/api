@@ -11,9 +11,8 @@ type EventType {
   section: String!
   phase: String!
   doc: String!
-  eventId: String!
+  data: String!
   params: String!
-  eventIdx: Int!
   extrinsicHash: String!
 }
 
@@ -23,15 +22,11 @@ type ExtrinsicType {
   extrinsicIndex: Int!
   section: String!
   method: String!
-  accountId: String!
-  signature: String!
-  signer: String!
-  nonce: String!
   extrinsicHash: String!
   success: Boolean!
   events: [EventType!]!
   params: String!
-  fee: Float!
+  doc: String!
   finalized: Boolean!
 }
 
@@ -91,9 +86,8 @@ input EventInputType {
   section: String!
   phase: String!
   doc: String!
-  eventId: String!
+  data: String!
   params: String!
-  eventIdx: Int!
   extrinsicHash: String!
 }
 
@@ -103,15 +97,11 @@ input ExtrinsicInputType {
   extrinsicIndex: Int!
   section: String!
   method: String!
-  accountId: String!
-  signature: String!
-  signer: String!
-  nonce: String!
   extrinsicHash: String!
   success: Boolean!
   events: [EventInputType!]!
   params: String!
-  fee: Float!
+  doc: String!
   finalized: Boolean!
 }
 

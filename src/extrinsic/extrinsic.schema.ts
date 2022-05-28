@@ -34,22 +34,6 @@ export class Extrinsic {
 
     @Field(() => String)
     @Prop()
-    accountId: string;
-
-    @Field(() => String)
-    @Prop()
-    signature: string;
-
-    @Field(() => String)
-    @Prop()
-    nonce: string;
-
-    @Field(() => String)
-    @Prop()
-    signer: string;
-
-    @Field(() => String)
-    @Prop()
     extrinsicHash: string;
 
     @Field(() => Boolean)
@@ -64,10 +48,10 @@ export class Extrinsic {
     @Prop()
     params: string;
 
-    @Field(() => Number)
+    @Field(()=> String)
     @Prop()
-    fee: number;
-
+    doc: string;
+    
     @Field(() => Boolean)
     @Prop()
     finalized: boolean;

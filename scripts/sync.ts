@@ -26,14 +26,6 @@ async function Run(){
         }
     );
 
-    //At least a block in the collection, otherwise findGaps doesn't work
-    const buit = await db.model('blocks', BlockSchema).find()
-    if(buit.length==0){
-      console.log("Primer block");
-      const last = await api.rpc.chain.getHeader();
-      await addBlocksDb(db,api,last.number,true);
-    }
-
     //Async main functionalities.
     Promise.all([ findGaps(db,api),  processAllAccounts(db,api), listenBlocks(db,api)])
     
@@ -138,8 +130,8 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
     block.stateRoot = CurrentBlock.block.header.stateRoot.toHex();
     block.blockAuthor = extendedBlock.author? extendedBlock.author.toString():"";
     //treure counts
+    block.extrinsicsCount = extendedBlock.extrinsics.length;
     block.eventCount = extendedBlock.events.length;
-    block.extrinsicsCount = extendedBlock.block.extrinsics.length;
     block.specVersion = runtime.specVersion.toNumber();
     block.finalized = false;
     block.blockTimestamp = timestamp;
@@ -151,7 +143,6 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
     block.events = [];
     //Afsegir parametres que falten
     await processBlockData(api,db,extrinsics,allevents,blockNum,blockHash,block,timestamp,updateAccount);    
-
     await Blockmodel.updateOne({blockNum: block.blockNum},{$setOnInsert:block},{upsert: true});
     
     console.log("Block: " + blockNum + " added")

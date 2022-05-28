@@ -28,13 +28,7 @@ export class EventType {
     doc: string;
 
     @Field()
-    eventId: string;
-    
-    @Field()
-    params: string;
-
-    @Field(() => Int)
-    eventIdx: number;
+    data: string;
 
     @Field()
     extrinsicHash: string;

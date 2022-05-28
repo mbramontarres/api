@@ -40,15 +40,7 @@ export class Event {
 
     @Field(()=> String)
     @Prop()
-    eventId: string;
-    
-    @Field(()=> String)
-    @Prop()
-    params: string;
-
-    @Field(()=> Number)
-    @Prop()
-    eventIdx: number;
+    data: string;
 
     @Field(()=> String)
     @Prop()

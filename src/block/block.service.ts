@@ -13,14 +13,11 @@ export class BlockService {
 
     public async findAll(blockArgs: BlockArgs): Promise<Block[]> 
     {
-        //const { limit, offset } = blockArgs;
-
         return this.blockModel.find().sort({blockNum: -1}).skip(blockArgs.skip).limit(blockArgs.take).exec();
     }
 
     public async findOne(num: Number): Promise<Block> 
     {
-        //const { limit, offset } = blockArgs;
         return this.blockModel.findOne({blockNum: num})
                     .populate('extrinsics')
                     .populate('events').exec();
@@ -29,7 +26,6 @@ export class BlockService {
 
     public async count(): Promise<Number> 
     {
-        //const { limit, offset } = blockArgs;
         return this.blockModel.count().exec();
     }
 
