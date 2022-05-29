@@ -57,7 +57,7 @@ export const addTransfer = async (Transfermodel,extr,feeInfo, allevents: EventRe
     transfer.hash = extr.extrinsicHash;
     transfer.events = extr.events;
     transfer.success = extr.success;
-    transfer.source = extr.signer;
+    transfer.source = extr.signer!=null? extr.signer:'';
     //const args = extrinsic.method.args;
     if (JSON.parse(extr.params)[0].id) {
         transfer.destination = JSON.parse(extr.params)[0].id;

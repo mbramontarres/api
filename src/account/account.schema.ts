@@ -38,10 +38,6 @@ export class Account {
     @Field(()=> String)
     @Prop()
     totalBalance: string;
-
-    @Field(() => [TransferType])
-    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transfer' }] })
-    transfers: Transfer[];
 }
 
 export type AccountDocument = Account & Document;

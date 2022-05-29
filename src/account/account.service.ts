@@ -17,9 +17,8 @@ export class AccountService {
 
     public async findOne(id: String): Promise<Account> 
     {
-        //const { limit, offset } = blockArgs;
         return this.accountModel.findOne({accountId: id})
-                    .populate('transfers').exec();
+                    .exec();
     }
 
     public async count(): Promise<Number> 

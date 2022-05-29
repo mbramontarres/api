@@ -1,6 +1,6 @@
 const config = {
     substrateNetwork: 'polkadot',
-    wsProviderUrl: 'wss://rpc.polkadot.io'/*'ws://0.0.0.0:9944'*/,
+    wsProviderUrl: 'wss://rpc-teranyina.centreeasy.com',
 
     mongoDBConstring: 'mongodb://localhost/explorerdb'
 };

@@ -28,7 +28,4 @@ export class AccountType {
     @Field(()=> String)
     totalBalance: string;
 
-    @Field(() => [TransferType])
-    transfers: TransferType[];
-
 }

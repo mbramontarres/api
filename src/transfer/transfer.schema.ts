@@ -36,7 +36,7 @@ export class Transfer {
     @Prop()
     hash: string;
 
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     @Prop()
     source: string;
     

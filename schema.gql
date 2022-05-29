@@ -12,7 +12,6 @@ type EventType {
   phase: String!
   doc: String!
   data: String!
-  params: String!
   extrinsicHash: String!
 }
 
@@ -74,7 +73,6 @@ type AccountType {
   lockedBalance: String!
   reservedBalance: String!
   totalBalance: String!
-  transfers: [TransferType!]!
 }
 
 input EventInputType {
@@ -87,7 +85,6 @@ input EventInputType {
   phase: String!
   doc: String!
   data: String!
-  params: String!
   extrinsicHash: String!
 }
 
@@ -144,7 +141,6 @@ input AccountInputType {
   lockedBalance: String!
   reservedBalance: String!
   totalBalance: String!
-  transfers: [TransferInputType!]!
 }
 
 type Query {
