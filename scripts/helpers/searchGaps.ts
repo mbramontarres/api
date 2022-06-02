@@ -1,7 +1,8 @@
 export async function searchGaps(lastBlock,db,BlockSchema) {
-    console.log(lastBlock);
+
     const result = await findIntervals(0,lastBlock,db,BlockSchema);
 
+    console.log("Gaps:")
     result.forEach(element=>{
         console.log("[",element.l,"-",element.r,"]");
     })

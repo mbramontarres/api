@@ -34,7 +34,7 @@ async function Run(){
 
 async function listenBlocks(db,api:ApiPromise){
 
-
+  console.log("Listener Thread Started")
   const chain = await api.rpc.system.chain();
   await api.rpc.chain.subscribeNewHeads(async (lastHeader) => {
     console.log(`${chain}: last block #${lastHeader.number} has hash ${lastHeader.hash}`);
@@ -65,7 +65,8 @@ async function processFinalized(api:ApiPromise,db,finalizedHash:BlockHash){
 }
 async function processAllAccounts(db,api) {
 
- 
+  
+  console.log("Accounts Thread Started")
   let limit = 50;
   let last_key = "";
   let query = await api.query.system.account.entriesPaged({ args: [], pageSize: limit, startKey: last_key });
@@ -89,9 +90,7 @@ async function findGaps(db,api: ApiPromise){
   console.log("Gaps Thread Started")
 
     const lastHeader =  await api.rpc.chain.getHeader();
-    console.log(lastHeader.number.toNumber());
     const gaps = await searchGaps(lastHeader.number.toNumber(),db,BlockSchema);
-    console.log(gaps);
     for(const gap of gaps){
       let block = gap.l;
       while(block<=gap.r){
