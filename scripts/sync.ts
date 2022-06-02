@@ -115,8 +115,6 @@ async function addBlocksDb(db,api: ApiPromise,blockNum,updateAccount:boolean) {
     const CurrentBlock = await api.rpc.chain.getBlock(blockHash);
     //Extended block
     const extendedBlock = await api.derive.chain.getBlock(blockHash);
-    //Get BlockApi
-    const apiblock  = await api.at(blockHash);
     //get extended header for author.
     //const extendedHeader = await api.derive.chain.getHeader(blockHash);
     const runtime = await api.rpc.state.getRuntimeVersion(blockHash);

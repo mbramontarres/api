@@ -46,7 +46,7 @@ export const addOrReplaceAccount = async (api: ApiPromise,account: string,db, up
 }
 
 
-export const addTransfer = async (Transfermodel,extr,feeInfo, allevents: EventRecord[]): Promise<void> =>{
+export const addTransfer = async (Transfermodel,extr,signer,feeInfo, allevents: EventRecord[]): Promise<void> =>{
     
     const transfer = new TransferType;
 
@@ -57,7 +57,7 @@ export const addTransfer = async (Transfermodel,extr,feeInfo, allevents: EventRe
     transfer.hash = extr.extrinsicHash;
     transfer.events = extr.events;
     transfer.success = extr.success;
-    transfer.source = extr.signer!=null? extr.signer:'';
+    transfer.source = signer;
     //const args = extrinsic.method.args;
     if (JSON.parse(extr.params)[0].id) {
         transfer.destination = JSON.parse(extr.params)[0].id;
@@ -172,7 +172,8 @@ export const processBlockData = async (api: ApiPromise,db, extrinsics,allevents,
                 extr.method === 'transferKeepAlive')) 
             {
                 //Add Transfer
-                addTransfer(Transfermodel,extr,feeInfo,allevents)
+                const signer = extrinsic.isSigned ? extrinsic.signer.toString() : '';
+                addTransfer(Transfermodel,extr,signer,feeInfo,allevents)
             }
             //Add Extrinsic
             const createdExtrinsic = await Extmodel.updateOne({blockNum: extr.blockNum,extrinsicIndex:extr.extrinsicIndex},{$setOnInsert:extr},{upsert: true});
